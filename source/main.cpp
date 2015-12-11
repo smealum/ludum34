@@ -9,6 +9,7 @@
 #include "shader.h"
 #include "camera.h"
 #include "cubes.h"
+#include "input.h"
 #include "obj.h"
 
 Settings settings(800, 600);
@@ -46,7 +47,7 @@ int main(void)
 	{
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		cubes.model = glm::rotate(glm::mat4(1.0f), angle, glm::vec3(0.0f, 1.0f, 0.0f));
+		if(!Input::isKeyHold(GLFW_KEY_A)) cubes.model = glm::rotate(glm::mat4(1.0f), angle, glm::vec3(0.0f, 1.0f, 0.0f));
 		cubes.draw(camera);
 		cubes2.draw(camera);
 

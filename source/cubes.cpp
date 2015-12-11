@@ -53,9 +53,9 @@ void Cubes::setColor(int i, glm::vec3 c, bool update)
 
 void Cubes::draw(Camera& camera)
 {
-    shader.use();
+	shader.use();
 
-    shader.setBuffers(vao, vbo, -1);
+	shader.setBuffers(vao, vbo, -1);
 
 	camera.updateCamera(shader);
 

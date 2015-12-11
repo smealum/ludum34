@@ -3,6 +3,7 @@
 #include "gl.h"
 #include "window.h"
 #include "settings.h"
+#include "input.h"
 #include "dbg.h"
 
 static GLFWwindow* window;
@@ -50,6 +51,8 @@ bool windowUpdate()
 {
 	glfwSwapBuffers(window);
 	glfwPollEvents();
+
+	Input::update(window);
 
 	return !glfwWindowShouldClose(window);
 }
