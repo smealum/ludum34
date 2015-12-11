@@ -22,15 +22,17 @@ int main(void)
 	Camera camera(0.001f, 100.0f);
 
 	float points[] = {
-	    0.0f,  2.0f, -0.0f, 1.0f, 0.0f, 0.0f,
-	    1.0f, -1.0f, -0.0f, 1.0f, 0.0f, 0.0f,
-	   -1.0f, -1.0f, -0.0f, 1.0f, 0.0f, 0.0f,
+	    0.0f,  2.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+	    1.0f, -1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+	   -1.0f, -1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
 	};
 
 	glViewport(0, 0, settings.width, settings.height);
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
 	glFrontFace(GL_CW);
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LESS);
 
 	GLuint vbo = 0;
 	glGenBuffers (1, &vbo);

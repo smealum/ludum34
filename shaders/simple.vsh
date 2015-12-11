@@ -9,6 +9,8 @@ uniform mat4 model, view, proj;
 out VertexAttrib
 {
   vec2 texcoord;
+  vec3 normal;
+  vec3 position;
   vec4 color;
 } vertex;
 
