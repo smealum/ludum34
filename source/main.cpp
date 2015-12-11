@@ -31,6 +31,7 @@ int main(void)
 	glDepthFunc(GL_LESS);
 
 	float angle = 0.0f;
+	float angle2 = 0.0f;
 
 	Cubes cubes(2);
 	Cubes cubes2(2);
@@ -47,9 +48,9 @@ int main(void)
 
 	double lastFrame = glfwGetTime();
 
-	Sound sound("drumloop.wav");
+	// Sound sound("drumloop.wav");
 
-	sound.play();
+	// sound.play();
 
 	while(windowUpdate())
 	{
@@ -68,10 +69,11 @@ int main(void)
 		cubes.draw(camera);
 		cubes2.draw(camera);
 
-		obj.model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 1.0f)) * glm::rotate(glm::mat4(glm::mat3(0.1f)), -angle, glm::vec3(1.0f, 0.0f, 0.0f));
+		obj.model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 1.0f)) * glm::rotate(glm::mat4(glm::mat3(0.1f)), angle2, glm::vec3(1.0f, 0.0f, 0.0f));
 		obj.draw(camera);
 
-		angle += 2.0f * deltaTime;
+		if(Input::isKeyHold(GLFW_KEY_E)) angle += 2.0f * deltaTime;
+		if(Input::isKeyHold(GLFW_KEY_R)) angle2 += 2.0f * deltaTime;
 	}
 
 	audioExit();
