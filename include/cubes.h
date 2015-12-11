@@ -3,6 +3,7 @@
 
 #include "shader.h"
 #include "camera.h"
+#include "lighting.h"
 #include "glm.h"
 
 typedef struct
@@ -16,7 +17,7 @@ class Cubes
 	public:
 		Cubes(int n);
 
-		void draw(Camera& camera);
+		void draw(Camera& camera, Lighting& lighting);
 		void update();
 
 		void setPosition(int i, glm::vec3 p, bool update = false);

@@ -82,7 +82,7 @@ class ShaderProgram
         inline GLint operator[](const std::string& name) {return uniform(name);}
 
         // parametrer le ShaderProgram
-        void setUniform(const std::string& name, float x,float y,float z);
+        void setUniform(const std::string& name, float x, float y, float z);
         void setUniform(const std::string& name, const glm::vec3 & v);
         void setUniform(const std::string& name, const glm::dvec3 & v);
         void setUniform(const std::string& name, const glm::vec4 & v);
@@ -90,8 +90,17 @@ class ShaderProgram
         void setUniform(const std::string& name, const glm::dmat4 & m);
         void setUniform(const std::string& name, const glm::mat4 & m);
         void setUniform(const std::string& name, const glm::mat3 & m);
+        void setUniform(const std::string& name, const glm::vec3 * v, int count = 1);
+        void setUniform(const std::string& name, const glm::dvec3 * v, int count = 1);
+        void setUniform(const std::string& name, const glm::vec4 * v, int count = 1);
+        void setUniform(const std::string& name, const glm::dvec4 * v, int count = 1);
+        void setUniform(const std::string& name, const glm::dmat4 * m, int count = 1);
+        void setUniform(const std::string& name, const glm::mat4 * m, int count = 1);
+        void setUniform(const std::string& name, const glm::mat3 * m, int count = 1);
         void setUniform(const std::string& name, float val );
         void setUniform(const std::string& name, int val );
+        void setUniform(const std::string& name, float* val, int count);
+        void setUniform(const std::string& name, int* val, int count);
 
         // invalid program, need some shaders
         ShaderProgram();

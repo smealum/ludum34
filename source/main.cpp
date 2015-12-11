@@ -8,6 +8,7 @@
 
 #include "shader.h"
 #include "camera.h"
+#include "lighting.h"
 #include "cubes.h"
 #include "input.h"
 #include "audio.h"
@@ -22,6 +23,11 @@ int main(void)
 	audioInit();
 
 	Camera camera(0.001f, 100.0f);
+	Lighting lighting;
+
+	lighting.setLightPosition(0, glm::vec3(2.0f, 2.0f, 2.0f));
+	lighting.setLightEnabled(0, true);
+	lighting.setLightShininess(0, 3.0f);
 
 	glViewport(0, 0, settings.width, settings.height);
 	glEnable(GL_CULL_FACE);
@@ -66,11 +72,11 @@ int main(void)
 		if(Input::isKeyHold(GLFW_KEY_A)) camera.movePositionDouble(glm::dvec3(-2.0, 0.0, 0.0) * deltaTime);
 
 		cubes.model = glm::rotate(glm::mat4(1.0f), angle, glm::vec3(0.0f, 1.0f, 0.0f));
-		cubes.draw(camera);
-		cubes2.draw(camera);
+		cubes.draw(camera, lighting);
+		cubes2.draw(camera, lighting);
 
 		obj.model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 1.0f)) * glm::rotate(glm::mat4(glm::mat3(0.1f)), angle2, glm::vec3(1.0f, 0.0f, 0.0f));
-		obj.draw(camera);
+		obj.draw(camera, lighting);
 
 		if(Input::isKeyHold(GLFW_KEY_E)) angle += 2.0f * deltaTime;
 		if(Input::isKeyHold(GLFW_KEY_R)) angle2 += 2.0f * deltaTime;

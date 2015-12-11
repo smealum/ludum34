@@ -4,6 +4,7 @@
 #include <vector>
 #include "shader.h"
 #include "camera.h"
+#include "lighting.h"
 #include "texture.h"
 #include "glm.h"
 
@@ -41,7 +42,7 @@ class ObjModel
 		int load(const char* filename);
 		int loadmtl(const char* filename);
 
-		void draw(Camera& camera);
+		void draw(Camera& camera, Lighting& lighting);
 
 		float getScale();
 

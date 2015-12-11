@@ -324,7 +324,7 @@ ShaderProgram::ShaderProgram(const ShaderProgram& other)
     uniformsMap = other.uniformsMap;
 }
 
-void ShaderProgram::setUniform(const std::string& name,float x,float y,float z)
+void ShaderProgram::setUniform(const std::string& name, float x, float y, float z)
 {
     glUniform3f(uniform(name), x, y, z);
 }
@@ -356,6 +356,34 @@ void ShaderProgram::setUniform(const std::string& name, const mat3 & m)
 {
     glUniformMatrix3fv(uniform(name), 1, GL_FALSE, value_ptr(m));
 }
+void ShaderProgram::setUniform(const std::string& name, const vec3 * v, int count)
+{
+    glUniform3fv(uniform(name), count, (float*)(v));
+}
+void ShaderProgram::setUniform(const std::string& name, const dvec3 * v, int count)
+{
+    glUniform3dv(uniform(name), count, (double*)(v));
+}
+void ShaderProgram::setUniform(const std::string& name, const vec4 * v, int count)
+{
+    glUniform4fv(uniform(name), count, (float*)(v));
+}
+void ShaderProgram::setUniform(const std::string& name, const dvec4 * v, int count)
+{
+    glUniform4dv(uniform(name), count, (double*)(v));
+}
+void ShaderProgram::setUniform(const std::string& name, const dmat4 * m, int count)
+{
+    glUniformMatrix4dv(uniform(name), count, GL_FALSE, (double*)(m));
+}
+void ShaderProgram::setUniform(const std::string& name, const mat4 * m, int count)
+{
+    glUniformMatrix4fv(uniform(name), count, GL_FALSE, (float*)(m));
+}
+void ShaderProgram::setUniform(const std::string& name, const mat3 * m, int count)
+{
+    glUniformMatrix3fv(uniform(name), count, GL_FALSE, (float*)(m));
+}
 void ShaderProgram::setUniform(const std::string& name, float val )
 {
     glUniform1f(uniform(name), val);
@@ -363,6 +391,14 @@ void ShaderProgram::setUniform(const std::string& name, float val )
 void ShaderProgram::setUniform(const std::string& name, int val )
 {
     glUniform1i(uniform(name), val);
+}
+void ShaderProgram::setUniform(const std::string& name, float* val, int count)
+{
+    glUniform1fv(uniform(name), count, val);
+}
+void ShaderProgram::setUniform(const std::string& name, int* val, int count)
+{
+    glUniform1iv(uniform(name), count, val);
 }
 
 ShaderProgram::ShaderProgram() :
@@ -490,7 +526,7 @@ void ShaderProgram::setBuffers(GLint vao, GLint vbo, GLint ebo)
     this->vao = vao;
     this->vbo = vbo;
     this->ebo = ebo;
-    
+
     glBindVertexArray(vao);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);

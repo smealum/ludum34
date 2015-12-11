@@ -213,13 +213,14 @@ float ObjModel::getScale(void)
 	return scale;
 }
 
-void ObjModel::draw(Camera& camera)
+void ObjModel::draw(Camera& camera, Lighting& lighting)
 {
 	shader.use();
 
 	shader.setUniform("model", model);
 	shader.setUniform("bTexture", true);
 	camera.updateCamera(shader);
+	lighting.update(shader);
 
 	for (std::vector<subobj_t>::iterator it = subobject.begin(); it != subobject.end(); ++it)
 	{

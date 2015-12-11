@@ -1,5 +1,7 @@
 #version 330
 
+#define NUM_LIGHTS 3
+
 in VertexAttrib
 {
   vec2 texcoord;
@@ -12,46 +14,58 @@ uniform mat4 model, view, proj;
 uniform bool bTexture;
 uniform sampler2D texture;
 
+uniform vec3 lights_position[NUM_LIGHTS];
+uniform vec3 lights_color[NUM_LIGHTS];
+uniform float lights_ambient[NUM_LIGHTS], lights_diffuse[NUM_LIGHTS], lights_specular[NUM_LIGHTS], lights_fresnel[NUM_LIGHTS], lights_shininess[NUM_LIGHTS];
+uniform float lights_fresnelBias[NUM_LIGHTS], lights_fresnelScale[NUM_LIGHTS], lights_fresnelPower[NUM_LIGHTS];
+uniform bool lights_enabled[NUM_LIGHTS];
+
 out vec4 out_color;
 
 void main()
 {
-	vec3 light_pos = vec3(view * vec4(2.0, 2.0, 2.0, 1.0));
+	vec3 Ilight = vec3(0.0);
 
-	vec3 N = mat3(model) * vin.normal;
-	vec3 VN = mat3(model) * vin.normal;
+	for(int i = 0; i < NUM_LIGHTS; i++)
+	{
+		if(!lights_enabled[i]) continue;
 
-	vec3 L = normalize(light_pos - vin.position);   
-	vec3 E = normalize(-vin.position);
-	vec3 R = normalize(-reflect(L, VN));
+		vec3 light_pos = vec3(view * vec4(lights_position[i], 1.0));
 
-	float fresnelBias = 0.1;
-	float fresnelScale = 0.7;
-	float fresnelPower = 3.0;
+		vec3 N = mat3(model) * vin.normal;
+		vec3 VN = mat3(model) * vin.normal;
 
-	vec3 ambient = vec3(0.2);
-	vec3 diffuse = vec3(0.5);
-	vec3 specular = vec3(0.7);
-	vec3 fresnel = vec3(1.0);
-	float shininess = 0.5;
+		vec3 L = normalize(light_pos - vin.position);   
+		vec3 E = normalize(-vin.position);
+		vec3 R = normalize(-reflect(L, VN));
 
-	//calculate Ambient Term:  
-	vec3 Iamb = ambient;
+		float fresnelBias = lights_fresnelBias[i];
+		float fresnelScale = lights_fresnelScale[i];
+		float fresnelPower = lights_fresnelPower[i];
+		vec3 ambient = vec3(lights_ambient[i]);
+		vec3 diffuse = vec3(lights_diffuse[i]);
+		vec3 specular = vec3(lights_specular[i]);
+		vec3 fresnel = vec3(lights_fresnel[i]);
+		float shininess = lights_shininess[i];
 
-	//calculate Diffuse Term:  
-	vec3 Idiff = diffuse * max(dot(VN, L), 0.0);
-	Idiff = clamp(Idiff, 0.0, 1.0);
+		//calculate Ambient Term:  
+		vec3 Iamb = ambient;
 
-	// calculate Specular Term:
-	vec3 Ispec = specular * pow(max(dot(R, E), 0.0), 0.3 * shininess);
-	Ispec = clamp(Ispec, 0.0, 1.0);
+		//calculate Diffuse Term:  
+		vec3 Idiff = diffuse * max(dot(VN, L), 0.0);
+		Idiff = clamp(Idiff, 0.0, 1.0);
 
-	// fresnel
-	vec3 Ifresnel = fresnel * (fresnelBias + fresnelScale * pow(1.0 + dot(vin.position, N), fresnelPower));
-	Ifresnel = clamp(Ifresnel, 0.0, 1.0);
+		// calculate Specular Term:
+		vec3 Ispec = specular * pow(max(dot(R, E), 0.0), 0.3 * shininess);
+		Ispec = clamp(Ispec, 0.0, 1.0);
 
-	vec3 Ilight = Iamb + Idiff + Ispec + Ifresnel;
-	// vec3 Ilight = Ifresnel;
+		// fresnel
+		vec3 Ifresnel = fresnel * (fresnelBias + fresnelScale * pow(1.0 + dot(vin.position, N), fresnelPower));
+		Ifresnel = clamp(Ifresnel, 0.0, 1.0);
+
+		Ilight += Iamb + Idiff + Ispec + Ifresnel;
+		// Ilight += Ifresnel;
+	}
 
 	if(bTexture) out_color = texture2D( texture, vec2(vin.texcoord.x, 1.0 - vin.texcoord.y) ).zyxw * vec4(Ilight, 1.0);
 	else out_color = vin.color * vec4(Ilight, 1.0);

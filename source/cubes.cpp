@@ -51,13 +51,14 @@ void Cubes::setColor(int i, glm::vec3 c, bool update)
 	if(update) this->update();
 }
 
-void Cubes::draw(Camera& camera)
+void Cubes::draw(Camera& camera, Lighting& lighting)
 {
 	shader.use();
 
 	shader.setBuffers(vao, vbo, -1);
 
 	camera.updateCamera(shader);
+	lighting.update(shader);
 
 	shader.setUniform("model", model);
 	shader.setUniform("bTexture", false);
