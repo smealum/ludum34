@@ -1,7 +1,8 @@
-#include "obj.h"
 #include <cstdio>
 #include <iostream>
 #include <string>
+#include "obj.h"
+#include "dbg.h"
 
 ObjModel::ObjModel(const char* filename):
 	model(glm::mat4(1.0f)),
@@ -106,8 +107,6 @@ int ObjModel::load(const char* filename)
 
 	generateGeometry(faces, cur_mtl);
 
-	std::cout << vertices.size() << " " << faces.size() << std::endl;
-
 	fclose(f);
 
 	return 0;
@@ -117,7 +116,7 @@ int ObjModel::loadmtl(const char* filename)
 {
 	if (!filename)return -1;
 
-	std::cout << "loading " << filename << std::endl;
+	log_info("loading %s", filename);
 
 	FILE* f = fopen(filename, "r");
 	if (!f) return -1;
@@ -141,37 +140,13 @@ int ObjModel::loadmtl(const char* filename)
 		}else if (!memcmp(ptr, "map_Kd", 6))
 		{
 			sscanf(ptr, "map_Kd %s", lastfile);
-			textures[lastmtl] = loadTexture(lastfile);
+			textures[lastmtl] = new Texture(lastfile);
 		}
 	}
 
 	fclose(f);
 
 	return 0;
-}
-
-int ObjModel::loadTexture(const char* filename)
-{
-	if (!filename)return -1;
-
-	// //std::cout << "loading " << filename << std::endl;
-
-	// GLuint texture = 0;
-	// cv::Mat img = cv::imread(filename);
-	// glGenTextures(1, &texture);
-
-	// glBindTexture(GL_TEXTURE_2D, texture);
-
-	// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-	// glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, img.cols, img.rows, 0, GL_RGB, GL_UNSIGNED_BYTE, img.ptr());
-
-	// return texture;
-	return -1;
 }
 
 int ObjModel::generateGeometry(std::vector<objFace_s>& faces, char* mtl)
@@ -213,7 +188,7 @@ int ObjModel::generateGeometry(std::vector<objFace_s>& faces, char* mtl)
 		}
 	}
 
-	printf("permutation %d vs %d vs %d vs %d (%d)\n", (int)permutation.size(), (int)faces.size() * 3, (int)vertices.size(), (int)texcoords.size(), (int)indices.size());
+	log_info("permutation %d vs %d vs %d vs %d (%d)", (int)permutation.size(), (int)faces.size() * 3, (int)vertices.size(), (int)texcoords.size(), (int)indices.size());
 
 	//load geometry
 	GLuint vbo, ebo;
@@ -243,19 +218,20 @@ void ObjModel::draw(Camera& camera)
 	shader.use();
 
 	shader.setUniform("model", model);
+	shader.setUniform("bTexture", true);
 	camera.updateCamera(shader);
 
 	for (std::vector<subobj_t>::iterator it = subobject.begin(); it != subobject.end(); ++it)
 	{
-		// glActiveTexture(GL_TEXTURE0);
-		// glBindTexture(GL_TEXTURE_2D, textures[it->mtl]);
-
 		shader.setBuffers(vao, it->vbo, it->ebo);
 
 		shader.setAttribute("position", 3, GL_FALSE, 8, 0);
 		shader.setAttribute("texcoord", 2, GL_FALSE, 8, 3);
 		shader.setAttribute("color", 2, GL_FALSE, 8, 3);
 		shader.setAttribute("normal", 3, GL_FALSE, 8, 5);
+
+		glActiveTexture(GL_TEXTURE0);
+		if(textures[it->mtl]) textures[it->mtl]->bind(GL_TEXTURE_2D);
 
 		glDrawElements(GL_TRIANGLES, it->faces * 3, GL_UNSIGNED_SHORT, NULL);
 	}

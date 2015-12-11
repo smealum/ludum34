@@ -43,18 +43,29 @@ int main(void)
 
 	ObjModel obj("test.obj");
 
+	double lastFrame = glfwGetTime();
+
 	while(windowUpdate())
 	{
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		if(!Input::isKeyHold(GLFW_KEY_A)) cubes.model = glm::rotate(glm::mat4(1.0f), angle, glm::vec3(0.0f, 1.0f, 0.0f));
+		double currentFrame = glfwGetTime();
+		double deltaTime = currentFrame - lastFrame;
+		lastFrame = currentFrame;
+
+		if(Input::isKeyHold(GLFW_KEY_W)) camera.movePositionDouble(glm::dvec3(0.0, 0.0, -2.0) * deltaTime);
+		if(Input::isKeyHold(GLFW_KEY_S)) camera.movePositionDouble(glm::dvec3(0.0, 0.0, 2.0) * deltaTime);
+		if(Input::isKeyHold(GLFW_KEY_D)) camera.movePositionDouble(glm::dvec3(2.0, 0.0, 0.0) * deltaTime);
+		if(Input::isKeyHold(GLFW_KEY_A)) camera.movePositionDouble(glm::dvec3(-2.0, 0.0, 0.0) * deltaTime);
+
+		cubes.model = glm::rotate(glm::mat4(1.0f), angle, glm::vec3(0.0f, 1.0f, 0.0f));
 		cubes.draw(camera);
 		cubes2.draw(camera);
 
-		obj.model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -50.0f)) * glm::rotate(glm::mat4(0.00005f), -angle, glm::vec3(1.0f, 0.0f, 0.0f));
+		obj.model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 1.0f)) * glm::rotate(glm::mat4(glm::mat3(0.1f)), -angle, glm::vec3(1.0f, 0.0f, 0.0f));
 		obj.draw(camera);
 
-		angle = 2.0f * glfwGetTime();
+		angle += 2.0f * deltaTime;
 	}
 
 	windowExit();

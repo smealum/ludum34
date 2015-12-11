@@ -4,6 +4,7 @@
 #include <vector>
 #include "shader.h"
 #include "camera.h"
+#include "texture.h"
 #include "glm.h"
 
 typedef struct
@@ -56,7 +57,7 @@ class ObjModel
 		std::vector<glm::vec3> vertices;
 		std::vector<glm::vec2> texcoords;
 		std::vector<glm::vec3> normals;
-		std::map<std::string, GLuint> textures;
+		std::map<std::string, Texture*> textures;
 		std::vector<subobj_t> subobject;
 		float scale;
 };

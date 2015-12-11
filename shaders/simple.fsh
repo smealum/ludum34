@@ -9,6 +9,8 @@ in VertexAttrib
 } vin;
 
 uniform mat4 model, view, proj;
+uniform bool bTexture;
+uniform sampler2D texture;
 
 out vec4 out_color;
 
@@ -39,5 +41,6 @@ void main()
 	Ispec = clamp(Ispec, 0.0, 1.0);
 
 	// write Total Color:
-	out_color = vin.color * vec4(Iamb + Idiff + Ispec, 1.0);
+	if(bTexture) out_color = vin.color * texture2D( texture, vec2(vin.texcoord.x, 1.0 - vin.texcoord.y) ).zyxw * vec4(Iamb + Idiff + Ispec, 1.0);
+	else out_color = vin.color * vec4(Iamb + Idiff + Ispec, 1.0);
 }

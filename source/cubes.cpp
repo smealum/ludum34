@@ -60,6 +60,7 @@ void Cubes::draw(Camera& camera)
 	camera.updateCamera(shader);
 
 	shader.setUniform("model", model);
+	shader.setUniform("bTexture", false);
 
 	glDrawArrays(GL_POINTS, 0, n);
 }
