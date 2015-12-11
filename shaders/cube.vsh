@@ -16,5 +16,5 @@ void main()
 {
     vertex.color = color;
     vertex.texcoord = texcoord;
-    gl_Position = proj * view * model * vec4(position, 1.0);
+    gl_Position = view * model * vec4(position, 1.0);
 }

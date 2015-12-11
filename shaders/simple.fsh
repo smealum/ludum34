@@ -1,11 +1,14 @@
-#version 150 core
+#version 330
 
-in vec4 frag_color;
-in vec2 frag_texcoord;
+in VertexAttrib
+{
+  vec2 texcoord;
+  vec4 color;
+} vin;
 
 out vec4 out_color;
 
 void main()
 {
-    out_color = frag_color;
+    out_color = vin.color;
 }
