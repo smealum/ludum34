@@ -10,6 +10,7 @@
 #include "camera.h"
 #include "cubes.h"
 #include "input.h"
+#include "audio.h"
 #include "obj.h"
 
 Settings settings(800, 600);
@@ -18,6 +19,7 @@ int main(void)
 {
 	windowInit();
 	glewInit();
+	audioInit();
 
 	Camera camera(0.001f, 100.0f);
 
@@ -45,6 +47,10 @@ int main(void)
 
 	double lastFrame = glfwGetTime();
 
+	Sound sound("drumloop.wav");
+
+	sound.play();
+
 	while(windowUpdate())
 	{
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -68,6 +74,7 @@ int main(void)
 		angle += 2.0f * deltaTime;
 	}
 
+	audioExit();
 	windowExit();
 
 	exit(EXIT_SUCCESS);

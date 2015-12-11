@@ -4,7 +4,7 @@ OBJS := $(addprefix build/, $(notdir $(SRC_C:%.c=%.o))) $(addprefix build/, $(no
 TARGET := game.exe
 CFLAGS := -Iinclude -Wall
 CPPFLAGS := -Iinclude -Wall -std=c++11
-LDLIBS = -lm -lglfw3 -lglew32s -lglu32 -lopengl32 -lmingw32 -lgdi32 -luser32 -lkernel32
+LDLIBS = -lfmod -lm -lglfw3 -lglew32s -lglu32 -lopengl32 -lmingw32 -lgdi32 -luser32 -lkernel32
 
 $(TARGET): build/dirs $(OBJS)
 	g++ $(LDFLAGS) -o $@ $(OBJS) $(LDLIBS)
