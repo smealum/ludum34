@@ -12,20 +12,23 @@ Cubes::Cubes(int n):
 		data[i].color = glm::vec3(1.0);
 	}
 
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
+
 	glGenBuffers(1, &vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glBufferData(GL_ARRAY_BUFFER, n * sizeof(cube_s), data, GL_STATIC_DRAW);
 
-	glGenVertexArrays(1, &vao);
-	glBindVertexArray(vao);
-
-	glBindFragDataLocation(shader.getHandle(), 0, "frag_colour");
+	shader.setBuffers(vao, vbo, -1);
+	shader.use();
+	glBindFragDataLocation(shader.getHandle(), 0, "out_color");
 	shader.setAttribute("position", 3, GL_FALSE, 6, 0);
 	shader.setAttribute("color", 3, GL_FALSE, 6, 3);
 }
 
 void Cubes::update()
 {
+	glBindVertexArray(vao);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glBufferData(GL_ARRAY_BUFFER, n * sizeof(cube_s), data, GL_STATIC_DRAW);
 }
@@ -50,10 +53,13 @@ void Cubes::setColor(int i, glm::vec3 c, bool update)
 
 void Cubes::draw(Camera& camera)
 {
-	shader.use();
-	shader.setUniform("model", model);
+    shader.use();
+
+    shader.setBuffers(vao, vbo, -1);
+
 	camera.updateCamera(shader);
 
-	shader.setBuffers(vao, vbo, -1);
+	shader.setUniform("model", model);
+
 	glDrawArrays(GL_POINTS, 0, n);
 }

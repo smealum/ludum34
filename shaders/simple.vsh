@@ -2,6 +2,7 @@
 
 in vec3 position;
 in vec4 color;
+in vec3 normal;
 in vec2 texcoord;
 
 uniform mat4 model, view, proj;
@@ -16,7 +17,10 @@ out VertexAttrib
 
 void main()
 {
+	vec3 tmp = vec3(view * model * vec4(position, 1.0));
     vertex.color = color;
     vertex.texcoord = texcoord;
-    gl_Position = proj * view * model * vec4(position, 1.0);
+    vertex.normal = normal;
+    vertex.position = tmp;
+    gl_Position = proj * vec4(tmp, 1.0);
 }

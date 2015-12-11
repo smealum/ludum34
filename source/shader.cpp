@@ -313,7 +313,7 @@ GLint ShaderProgram::attribLocation(const std::string& name)
 {
     GLint attrib = glGetAttribLocation(handle, name.c_str());
     if (attrib == GL_INVALID_OPERATION || attrib < 0 )
-        log_warn("Attribute %s doesn't exist in program %s.", name.c_str(), this->name.c_str());
+        log_warn("Attribute %s doesn't exist in program %s. %d", name.c_str(), this->name.c_str(), attrib);
 
     return attrib;
 }
@@ -440,21 +440,21 @@ void ShaderProgram::use()
         glBindVertexArray(vao);
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-        for (auto it(attributes.begin()); it != attributes.end(); ++it)
-        {
-            GLint loc = attribLocation(it->first);
-            glEnableVertexAttribArray(loc);
-            glVertexAttribPointer(
-                    loc,
-                    it->second.size,
-                    it->second.type,
-                    it->second.normalized,
-                    it->second.stride*sizeof(GLfloat),
-                    (void*)(it->second.offset*sizeof(GLfloat))
-                    );
-            //log_info("Attrib %s at loc %d.", it->first.c_str(), loc);
+        // for (auto it(attributes.begin()); it != attributes.end(); ++it)
+        // {
+        //     GLint loc = attribLocation(it->first);
+        //     glEnableVertexAttribArray(loc);
+        //     glVertexAttribPointer(
+        //             loc,
+        //             it->second.size,
+        //             it->second.type,
+        //             it->second.normalized,
+        //             it->second.stride*sizeof(GLfloat),
+        //             (void*)(it->second.offset*sizeof(GLfloat))
+        //             );
+        //     //log_info("Attrib %s at loc %d.", it->first.c_str(), loc);
 
-        }
+        // }
         log_info("Program %s is loaded again.", name.c_str());
         loadUniforms();
 	} else {
@@ -468,6 +468,7 @@ void ShaderProgram::use()
 void ShaderProgram::setAttribute(const std::string& name, GLint size, GLboolean normalized, GLsizei stride, GLuint offset, GLenum type)
 {
     GLint loc = attribLocation(name);
+    if(loc < 0) return;
     glEnableVertexAttribArray(loc);
     glVertexAttribPointer(
             loc,
@@ -477,11 +478,11 @@ void ShaderProgram::setAttribute(const std::string& name, GLint size, GLboolean 
             stride*sizeof(GLfloat),
             (void*)(offset*sizeof(GLfloat))
 	);
-    attributes[name].size = size;
-    attributes[name].normalized = normalized;
-    attributes[name].stride = stride;
-    attributes[name].offset = offset;
-    attributes[name].type = type;
+    // attributes[name].size = size;
+    // attributes[name].normalized = normalized;
+    // attributes[name].stride = stride;
+    // attributes[name].offset = offset;
+    // attributes[name].type = type;
 }
 
 void ShaderProgram::setBuffers(GLint vao, GLint vbo, GLint ebo)
@@ -489,6 +490,10 @@ void ShaderProgram::setBuffers(GLint vao, GLint vbo, GLint ebo)
     this->vao = vao;
     this->vbo = vbo;
     this->ebo = ebo;
+    
+    glBindVertexArray(vao);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
 }
 
 void ShaderProgram::saveUniforms()
