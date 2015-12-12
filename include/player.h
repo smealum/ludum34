@@ -21,6 +21,7 @@ class Player
 		void draw(Camera& camera, Lighting& lighting);
 		
 		void setNextMove(glm::vec3 direction);
+		void startMoving(void);
 
 	private:
 		glm::vec3 position;

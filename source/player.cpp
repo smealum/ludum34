@@ -14,11 +14,15 @@ Player::Player():
 void Player::setNextMove(glm::vec3 _direction)
 {
 	moves.push(_direction);
+}
 
-	if(state != PLAYER_MOVING)
-	{
-		state = PLAYER_MOVING;
-	}
+void Player::startMoving(void)
+{
+	if(moves.empty() || state == PLAYER_MOVING) return;
+
+	direction = moves.front();
+	moves.pop();
+	state = PLAYER_MOVING;
 }
 
 void Player::update(float delta)
@@ -27,21 +31,25 @@ void Player::update(float delta)
 	if(Input::isKeyPressed(GLFW_KEY_G))
 	{
 		setNextMove(glm::vec3(1.0f, 0.0f, 0.0f));
+		startMoving();
 	}
 
 	if(Input::isKeyPressed(GLFW_KEY_B))
 	{
 		setNextMove(glm::vec3(-1.0f, 0.0f, 0.0f));
+		startMoving();
 	}
 
 	if(Input::isKeyPressed(GLFW_KEY_V))
 	{
 		setNextMove(glm::vec3(0.0f, 0.0f, 1.0f));
+		startMoving();
 	}
 
 	if(Input::isKeyPressed(GLFW_KEY_N))
 	{
 		setNextMove(glm::vec3(0.0f, 0.0f, -1.0f));
+		startMoving();
 	}
 
 	switch(state)

@@ -6,7 +6,7 @@ using namespace glm;
 
 Camera::Camera(float znear, float zfar):
 	view(1.f),
-	proj(perspective(radToDeg(70.f), settings.getAspectRatio(), znear, zfar)),
+	proj(perspective(radToDeg(70.f) / 2, settings.getAspectRatio(), znear, zfar)),
     pos(0.0,0.0,5.0),
     refPos(0.0,0.0,0.0),
 	znear(znear),

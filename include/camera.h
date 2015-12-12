@@ -29,11 +29,11 @@ class Camera
 		void moveReference(glm::dvec3 r);
 
 		glm::mat4 view, proj, final;
+		glm::mat3 view3;
 
 	private:
 		// view should be computed from view3 and pos
 		// never modify view directly
-		glm::mat3 view3;
 		glm::dvec3 pos, refPos;
 		glm::vec4 frustumPlane[6]; 
 		float znear, zfar;
