@@ -20,7 +20,7 @@ class LevelGeneratorStatic : public LevelGenerator
 		virtual slice_s getSlice(int layer);
 
 	private:
-
+		int n[3];
 };
 
 #endif

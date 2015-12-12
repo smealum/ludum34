@@ -19,7 +19,7 @@
 #include "path.h"
 #include "audio.h"
 
-Settings settings(800, 600);
+Settings settings(800 * 2, 600 * 2, 4.0f * 2);
 
 int main(void)
 {
@@ -42,7 +42,7 @@ int main(void)
 	lighting.setLightFresnel(0, 0.0f);
 	lighting.setLightShininess(0, 3.0f);
 
-	glLineWidth(4.0f);
+	glLineWidth(settings.line_width);
 
 	glViewport(0, 0, settings.width, settings.height);
 	glEnable(GL_BLEND);

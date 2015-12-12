@@ -1,4 +1,21 @@
 #include "level_generator.h"
+#include "level.h"
+
+static slice_s first_slice =
+	(slice_s)
+	{
+		{ 
+		  {0, 0, 0, 0, 0, 0, 0, 0, 0},  
+		  {0, 0, 0, 0, 0, 0, 0, 0, 0}, 
+		  {0, 0, 0, 0, 0, 0, 0, 0, 0}, 
+		  {0, 0, 0, 0, 0, 0, 0, 0, 0}, 
+		  {0, 0, 0, 0, 1, 0, 0, 0, 0}, 
+		  {0, 0, 0, 0, 0, 0, 0, 0, 0}, 
+		  {0, 0, 0, 0, 0, 0, 0, 0, 0}, 
+		  {0, 0, 0, 0, 0, 0, 0, 0, 0}, 
+		  {0, 0, 0, 0, 0, 0, 0, 0, 0}
+		}	
+	};
 
 static slice_s test_slice[] = 
 {
@@ -49,10 +66,15 @@ static slice_s test_slice[] =
 
 LevelGeneratorStatic::LevelGeneratorStatic()
 {
-
+	for(int i = 0; i < LEVEL_NUMLAYERS; i++)
+	{
+		n[i] = 0;
+	}
 }
 
 slice_s LevelGeneratorStatic::getSlice(int layer)
 {
+	n[layer]++;
+	if(n[layer] == 1) return first_slice;
 	return test_slice[layer];
 }

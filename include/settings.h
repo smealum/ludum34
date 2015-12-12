@@ -4,7 +4,7 @@
 class Settings
 {
 	public:
-		Settings(int _width, int _height);
+		Settings(int _width, int _height, float _line_width = 4.0f);
 
 		inline float getAspectRatio()
 		{
@@ -13,6 +13,7 @@ class Settings
 
 	public:
 		int width, height;
+		float line_width;
 };
 
 extern Settings settings;
