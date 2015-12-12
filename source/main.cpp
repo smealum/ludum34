@@ -71,19 +71,9 @@ int main(void)
 	Player player;
 	Text text("hello", glm::vec2(0.0, 0.0));
 
-	Level level;
+	LevelGeneratorStatic levelGenerator;
+	Level level(levelGenerator);
 	Cubes lightcube(1);
-
-	level.addSliceLayer(0, test_slice);
-	level.addSliceLayer(0, test_slice);
-	level.addSliceLayer(0, test_slice);
-	level.addSliceLayer(0, test_slice);
-	level.addSliceLayer(0, test_slice);
-	level.addSliceLayer(0, test_slice);
-	level.addSliceLayer(0, test_slice);
-	level.addSliceLayer(0, test_slice);
-
-	level.addSliceLayer(1, test_slice);
 
 	double lastFrame = glfwGetTime();
 
@@ -119,7 +109,7 @@ int main(void)
 		
 		{
 			level.update(deltaTime);
-			player.update(deltaTime);
+			player.update(level, deltaTime);
 			player.updateCamera(camera);
 		}
 

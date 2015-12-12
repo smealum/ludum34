@@ -31,7 +31,7 @@ void Player::updateCamera(Camera& camera)
 	camera.setPosition(position + direction * float(angle / (M_PI / 2.0f)) + glm::vec3(-5.0f, 10.0f, -5.0f));
 }
 
-void Player::update(float delta)
+void Player::update(Level& level, float delta)
 {
 	// TEMP
 	if(Input::isKeyPressed(GLFW_KEY_A))
@@ -75,6 +75,11 @@ void Player::update(float delta)
 					moves.pop();
 				}else{
 					state = PLAYER_IDLE;
+				}
+
+				while(int(position.z - level.getOffset()) > 8)
+				{
+					level.popSlice();
 				}
 			}
 			break;

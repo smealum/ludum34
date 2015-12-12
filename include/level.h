@@ -3,15 +3,12 @@
 
 #include <deque>
 #include "cubes.h"
+#include "slices.h"
+#include "level_generator.h"
 
-#define LEVEL_WIDTH (9)
 #define LEVEL_NUMLAYERS (3)
+#define LEVEL_NUMSLICES (32)
 #define SC_NUMCUBES (1024)
-
-typedef struct
-{
-	unsigned char data[LEVEL_WIDTH][LEVEL_WIDTH];
-}slice_s;
 
 typedef enum
 {
@@ -33,12 +30,17 @@ class SliceCollection
 		void setOrientation(int orientation);
 		void clear();
 
+		void incrementBaseDepth(int v = 1);
+		
+		int getBaseDepth();
+		int getNumSlices();
+
 		void mergeLayers(SliceCollection** sc, int n);
 
 	private:
 		std::deque<slice_s> data;
 		Cubes cubes;
-		int depth, orientation;
+		int base_depth, depth, orientation;
 		float angle;
 };
 
@@ -54,6 +56,7 @@ class Layer
 		void rotate();
 
 		void addSlice(slice_s s);
+		void popSlice();
 
 	private:
 		SliceCollection slices;
@@ -65,7 +68,7 @@ class Layer
 class Level
 {
 	public:
-		Level();
+		Level(LevelGenerator& lg);
 		
 		void draw(Camera& camera, Lighting& lighting);
 
@@ -73,9 +76,14 @@ class Level
 
 		void update(float delta);
 		void updateGeometry();
+
 		void addSliceLayer(int l, slice_s s, bool update = true);
+		void popSlice(bool update = true);
+
+		int getOffset();
 
 	private:
+		LevelGenerator& generator;
 		SliceCollection slices;
 		Layer layers[LEVEL_NUMLAYERS];
 };

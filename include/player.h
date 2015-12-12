@@ -3,6 +3,7 @@
 
 #include "glm.h"
 #include "cubes.h"
+#include "level.h"
 
 #include <queue>
 
@@ -17,7 +18,7 @@ class Player
 	public:
 		Player();
 
-		void update(float delta);
+		void update(Level& level, float delta);
 		void updateCamera(Camera& camera);
 		void draw(Camera& camera, Lighting& lighting);
 		

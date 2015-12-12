@@ -1,15 +1,32 @@
 #include "level.h"
 #include "_math.h"
+#include "input.h"
 
 #define orientationToAngle(o) ((o) * M_PI / 2)
 
 SliceCollection::SliceCollection():
 	cubes(SC_NUMCUBES, 0),
+	base_depth(0),
 	depth(0),
 	orientation(0),
 	angle(0.0f)
 {
 
+}
+
+int SliceCollection::getNumSlices()
+{
+	return data.size();
+}
+
+int SliceCollection::getBaseDepth()
+{
+	return base_depth;
+}
+
+void SliceCollection::incrementBaseDepth(int v)
+{
+	base_depth += v;
 }
 
 void SliceCollection::addSlice(slice_s s)
@@ -20,7 +37,7 @@ void SliceCollection::addSlice(slice_s s)
 		{
 			if(s.data[i][j])
 			{
-				cubes.addCube(glm::vec3(j * 1.0f, (LEVEL_WIDTH - 1 - i) * 1.0f, depth * 1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+				cubes.addCube(glm::vec3(j * 1.0f, (LEVEL_WIDTH - 1 - i) * 1.0f, (base_depth + depth) * 1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
 			}
 		}
 	}
@@ -225,7 +242,13 @@ void Layer::addSlice(slice_s s)
 	slices.addSlice(s);
 }
 
-Level::Level()
+void Layer::popSlice()
+{
+	slices.popSlice();
+}
+
+Level::Level(LevelGenerator& lg):
+	generator(lg)
 {
 
 }
@@ -248,7 +271,19 @@ void Level::update(float delta)
 	bool needUpdate = false;
 	for(int i = 0; i < LEVEL_NUMLAYERS; i++)
 	{
-		needUpdate = layers[i].update(delta) || needUpdate; 
+		needUpdate = layers[i].update(delta) || needUpdate;
+		while(layers[i].slices.getNumSlices() < LEVEL_NUMSLICES)
+		{
+			addSliceLayer(i, generator.getSlice(i), false);
+			needUpdate = true;
+		}
+	}
+
+	// TEMP
+	if(Input::isKeyPressed(GLFW_KEY_P))
+	{
+		popSlice(false);
+		needUpdate = true;
 	}
 
 	if(needUpdate)
@@ -280,4 +315,21 @@ void Level::addSliceLayer(int l, slice_s s, bool update)
 	layers[l].addSlice(s);
 
 	if(update) this->updateGeometry();
+}
+
+void Level::popSlice(bool update)
+{
+	for(int i = 0; i < LEVEL_NUMLAYERS; i++)
+	{
+		layers[i].popSlice();
+	}
+
+	slices.incrementBaseDepth();
+
+	if(update) this->updateGeometry();
+}
+
+int Level::getOffset()
+{
+	return slices.getBaseDepth();
 }
