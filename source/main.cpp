@@ -10,9 +10,10 @@
 #include "camera.h"
 #include "lighting.h"
 #include "cubes.h"
+#include "text.h"
+#include "obj.h"
 #include "input.h"
 #include "audio.h"
-#include "obj.h"
 
 Settings settings(800, 600);
 
@@ -21,6 +22,7 @@ int main(void)
 	windowInit();
 	glewInit();
 	audioInit();
+	textInit();
 
 	Camera camera(0.001f, 100.0f);
 	Lighting lighting;
@@ -30,6 +32,8 @@ int main(void)
 	lighting.setLightShininess(0, 3.0f);
 
 	glViewport(0, 0, settings.width, settings.height);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
 	glFrontFace(GL_CW);
@@ -41,6 +45,7 @@ int main(void)
 
 	Cubes cubes(2);
 	Cubes cubes2(2);
+	Text text("hello", glm::vec2(0.0, 0.0));
 
 	cubes.setPosition(0, glm::vec3(-1.0f, 0.0f, 0.0f));
 	cubes.setPosition(1, glm::vec3(1.0f, 0.0f, 0.0f));
@@ -78,10 +83,13 @@ int main(void)
 		obj.model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 1.0f)) * glm::rotate(glm::mat4(glm::mat3(0.1f)), angle2, glm::vec3(1.0f, 0.0f, 0.0f));
 		obj.draw(camera, lighting);
 
+		text.draw();
+
 		if(Input::isKeyHold(GLFW_KEY_E)) angle += 2.0f * deltaTime;
 		if(Input::isKeyHold(GLFW_KEY_R)) angle2 += 2.0f * deltaTime;
 	}
 
+	textExit();
 	audioExit();
 	windowExit();
 

@@ -328,6 +328,10 @@ void ShaderProgram::setUniform(const std::string& name, float x, float y, float 
 {
     glUniform3f(uniform(name), x, y, z);
 }
+void ShaderProgram::setUniform(const std::string& name, const vec2 & v)
+{
+    glUniform2fv(uniform(name), 1, value_ptr(v));
+}
 void ShaderProgram::setUniform(const std::string& name, const vec3 & v)
 {
     glUniform3fv(uniform(name), 1, value_ptr(v));
@@ -505,14 +509,28 @@ void ShaderProgram::setAttribute(const std::string& name, GLint size, GLboolean 
 {
     GLint loc = attribLocation(name);
     if(loc < 0) return;
+
     glEnableVertexAttribArray(loc);
+
+    int elementSize;
+    switch(type)
+    {
+    	case GL_BYTE:
+    	case GL_UNSIGNED_BYTE:
+    	 	elementSize = 1;
+    		break;
+    	default:
+    	 	elementSize = sizeof(GLfloat);
+    	 	break;
+    }
+
     glVertexAttribPointer(
             loc,
             size,
             type,
             normalized,
-            stride*sizeof(GLfloat),
-            (void*)(offset*sizeof(GLfloat))
+            stride * elementSize,
+            (void*)(offset * elementSize)
 	);
     // attributes[name].size = size;
     // attributes[name].normalized = normalized;

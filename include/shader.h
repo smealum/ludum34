@@ -83,6 +83,7 @@ class ShaderProgram
 
         // parametrer le ShaderProgram
         void setUniform(const std::string& name, float x, float y, float z);
+        void setUniform(const std::string& name, const glm::vec2 & v);
         void setUniform(const std::string& name, const glm::vec3 & v);
         void setUniform(const std::string& name, const glm::dvec3 & v);
         void setUniform(const std::string& name, const glm::vec4 & v);

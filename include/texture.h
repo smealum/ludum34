@@ -9,6 +9,8 @@ class Texture
         Texture(const char* filename);
         ~Texture();
 
+        void setFilter(GLint filter);
+
         void bind(GLenum target);
 
     private:
