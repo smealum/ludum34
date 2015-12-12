@@ -5,6 +5,7 @@ Cubes::Cubes(int n, int _current_n):
 	n(n),
 	data(new cube_s[n]),
 	shader(ShaderProgram::loadFromFile("shaders/cube.vsh", "shaders/simple.fsh", "shaders/cube.gsh", "cube"))
+	// shader(ShaderProgram::loadFromFile("shaders/cube.vsh", "shaders/simple.fsh", "shaders/cubes_wireframe.gsh", "cube"))
 {
 	if(_current_n < 0) current_n = n;
 	else current_n = _current_n;
@@ -47,7 +48,7 @@ int Cubes::addCube(glm::vec3 p, glm::vec3 c, bool update)
 	int id = current_n;
 
 	current_n++;
-	
+
 	setPosition(id, p);
 	setColor(id, c);
 

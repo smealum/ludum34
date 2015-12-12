@@ -29,6 +29,15 @@ void SliceCollection::incrementBaseDepth(int v)
 	base_depth += v;
 }
 
+float getTiling(glm::vec3 position)
+{
+	int i = int(position.x);
+	int j = int(position.y);
+	int k = int(position.z);
+
+	return ((i + j + k) % 2) ? 1.0f : 0.985f;
+}
+
 void SliceCollection::addSlice(slice_s s)
 {
 	for(int i = 0; i < LEVEL_WIDTH; i++)
@@ -37,7 +46,8 @@ void SliceCollection::addSlice(slice_s s)
 		{
 			if(s.data[i][j])
 			{
-				cubes.addCube(glm::vec3(j * 1.0f, (LEVEL_WIDTH - 1 - i) * 1.0f, (base_depth + depth) * 1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+				glm::vec3 p = glm::vec3(j * 1.0f, (LEVEL_WIDTH - 1 - i) * 1.0f, (base_depth + depth) * 1.0f);
+				cubes.addCube(p, glm::vec3(1.0f, 1.0f, 1.0f) * getTiling(p));
 			}
 		}
 	}
@@ -297,15 +307,26 @@ void Level::rotateLayer(int l)
 	if(l < 0 || l >= LEVEL_NUMLAYERS) return;
 
 	layers[l].rotate();
+
+	updateGeometry();
 }
 
 void Level::updateGeometry()
 {
 	SliceCollection* sc[LEVEL_NUMLAYERS];
 
-	for(int i = 0; i < LEVEL_NUMLAYERS; i++) sc[i] = &layers[i].slices;
+	int num = 0;
 
-	slices.mergeLayers(sc, LEVEL_NUMLAYERS);
+	for(int i = 0; i < LEVEL_NUMLAYERS; i++)
+	{
+		if(layers[i].state != LAYER_ROTATING)
+		{
+			sc[num] = &layers[i].slices;
+			num++;
+		}
+	}
+
+	slices.mergeLayers(sc, num);
 }
 
 void Level::addSliceLayer(int l, slice_s s, bool update)

@@ -56,6 +56,8 @@ int main(void)
 	lighting.setLightFresnel(0, 0.0f);
 	lighting.setLightShininess(0, 3.0f);
 
+	glLineWidth(4.0f);
+
 	glViewport(0, 0, settings.width, settings.height);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
