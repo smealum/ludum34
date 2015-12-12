@@ -16,6 +16,7 @@ class Cubes
 {
 	public:
 		Cubes(int n);
+		~Cubes();
 
 		void draw(Camera& camera, Lighting& lighting);
 		void update();

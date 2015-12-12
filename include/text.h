@@ -11,6 +11,7 @@ class Text
 {
 	public:
 		Text(const char* string, glm::vec2 position, float size = CHAR_SIZE, int _buffer_length = 0);
+		~Text();
 
 		void update(const char* string);
 		void setSize(float _size);

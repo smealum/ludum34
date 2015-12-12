@@ -41,6 +41,12 @@ Text::Text(const char* string, glm::vec2 position, float size, int _buffer_lengt
 	shader.setAttribute("character", 1, GL_FALSE, 1, 0, GL_UNSIGNED_BYTE);
 }
 
+Text::~Text()
+{
+	glDeleteBuffers(1, &vbo);
+	glDeleteBuffers(1, &vao);
+}
+
 void Text::update(const char* string)
 {
 	if(!string) return;

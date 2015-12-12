@@ -11,6 +11,7 @@
 #include "lighting.h"
 #include "cubes.h"
 #include "text.h"
+#include "player.h"
 #include "obj.h"
 #include "input.h"
 #include "audio.h"
@@ -43,17 +44,8 @@ int main(void)
 	float angle = 0.0f;
 	float angle2 = 0.0f;
 
-	Cubes cubes(2);
-	Cubes cubes2(2);
+	Player player;
 	Text text("hello", glm::vec2(0.0, 0.0));
-
-	cubes.setPosition(0, glm::vec3(-1.0f, 0.0f, 0.0f));
-	cubes.setPosition(1, glm::vec3(1.0f, 0.0f, 0.0f));
-	cubes.update();
-
-	cubes2.setPosition(0, glm::vec3(0.0f, -1.0f, 0.0f));
-	cubes2.setPosition(1, glm::vec3(0.0f, 1.0f, 0.0f));
-	cubes2.update();
 
 	ObjModel obj("test.obj");
 
@@ -76,12 +68,11 @@ int main(void)
 		if(Input::isKeyHold(GLFW_KEY_D)) camera.movePositionDouble(glm::dvec3(2.0, 0.0, 0.0) * deltaTime);
 		if(Input::isKeyHold(GLFW_KEY_A)) camera.movePositionDouble(glm::dvec3(-2.0, 0.0, 0.0) * deltaTime);
 
-		cubes.model = glm::rotate(glm::mat4(1.0f), angle, glm::vec3(0.0f, 1.0f, 0.0f));
-		cubes.draw(camera, lighting);
-		cubes2.draw(camera, lighting);
+		player.update(deltaTime);
+		player.draw(camera, lighting);
 
-		obj.model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 1.0f)) * glm::rotate(glm::mat4(glm::mat3(0.1f)), angle2, glm::vec3(1.0f, 0.0f, 0.0f));
-		obj.draw(camera, lighting);
+		// obj.model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 1.0f)) * glm::rotate(glm::mat4(glm::mat3(0.1f)), angle2, glm::vec3(1.0f, 0.0f, 0.0f));
+		// obj.draw(camera, lighting);
 
 		text.draw();
 

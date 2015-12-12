@@ -26,6 +26,12 @@ Cubes::Cubes(int n):
 	shader.setAttribute("color", 3, GL_FALSE, 6, 3);
 }
 
+Cubes::~Cubes()
+{
+	glDeleteBuffers(1, &vbo);
+	glDeleteBuffers(1, &vao);
+}
+
 void Cubes::update()
 {
 	glBindVertexArray(vao);
