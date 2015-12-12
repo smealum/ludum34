@@ -15,7 +15,7 @@ typedef struct
 class Cubes
 {
 	public:
-		Cubes(int n, int current_n = -1);
+		Cubes(int n, int current_n = -1, bool wireframe = false);
 		~Cubes();
 
 		void draw(Camera& camera, Lighting& lighting);
@@ -37,6 +37,7 @@ class Cubes
 		cube_s* data;
 		ShaderProgram& shader;
 		GLuint vao, vbo;
+		bool wireframe;
 };
 
 #endif

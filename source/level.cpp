@@ -1,11 +1,22 @@
+#include <iostream>
 #include "level.h"
 #include "_math.h"
 #include "input.h"
 
 #define orientationToAngle(o) ((o) * M_PI / 2)
 
+cubeType_s cubeTypes[16] =
+{
+	(cubeType_s){glm::vec3(0.0f)},
+	(cubeType_s){glm::vec3(1.0f, 1.0f, 1.0f)},
+	(cubeType_s){glm::vec3(66.0f, 130.0f, 255.0f) * (1.0f / 255)},
+	(cubeType_s){glm::vec3(255.0f, 59.0f, 24.0f) * (1.0f / 255)},
+	(cubeType_s){glm::vec3(147.0f, 37.0f, 255.0f) * (1.0f / 255)},
+};
+
 SliceCollection::SliceCollection():
 	cubes(SC_NUMCUBES, 0),
+	cubes_wireframe(SC_NUMCUBES, 0, true),
 	base_depth(0),
 	depth(0),
 	orientation(0),
@@ -38,16 +49,26 @@ float getTiling(glm::vec3 position)
 	return ((i + j + k) % 2) ? 1.0f : 0.985f;
 }
 
+
 void SliceCollection::addSlice(slice_s s)
 {
 	for(int i = 0; i < LEVEL_WIDTH; i++)
 	{
 		for(int j = 0; j < LEVEL_WIDTH; j++)
 		{
-			if(s.data[i][j])
+			glm::vec3 p = glm::vec3(j * 1.0f, (LEVEL_WIDTH - 1 - i) * 1.0f, (base_depth + depth) * 1.0f);
+			unsigned char v = getCubeFullId(s.data[i][j]);
+
+			if(v)
 			{
-				glm::vec3 p = glm::vec3(j * 1.0f, (LEVEL_WIDTH - 1 - i) * 1.0f, (base_depth + depth) * 1.0f);
-				cubes.addCube(p, glm::vec3(1.0f, 1.0f, 1.0f) * getTiling(p));
+				cubes.addCube(p, cubeTypes[v].color * getTiling(p));
+			}
+
+			v = getCubeWireframeId(s.data[i][j]);
+
+			if(v)
+			{
+				cubes_wireframe.addCube(p, cubeTypes[v].color);
 			}
 		}
 	}
@@ -55,6 +76,7 @@ void SliceCollection::addSlice(slice_s s)
 	depth++;
 	data.push_back(s);
 	cubes.update();
+	cubes_wireframe.update();
 }
 
 void SliceCollection::popSlice()
@@ -62,13 +84,36 @@ void SliceCollection::popSlice()
 	int slice_depth = depth - data.size();
 
 	cubes.removeDepth(float(slice_depth));
+	cubes_wireframe.removeDepth(float(slice_depth));
 
 	data.pop_front();
 }
 
-unsigned char mergeCubes(unsigned char c1, unsigned char c2)
+unsigned char mergeFilledCubes(unsigned char c1, unsigned char c2)
 {
 	return c1 ? c1 : c2;
+}
+
+unsigned char mergeWireframeCubes(unsigned char c1, unsigned char c3)
+{
+	unsigned char c2 = c3;
+	if(c1 > c2)
+	{
+		c2 = c1;
+		c1 = c3;
+	}
+
+	if(!c1) return c2;
+	if(c1 == c2) return c1;
+
+	if(c1 == 2 && c2 == 3) return 4;
+
+	return c1;
+}
+
+unsigned char mergeCubes(unsigned char c1, unsigned char c2)
+{
+	return (mergeWireframeCubes(getCubeWireframeId(c1), getCubeWireframeId(c2)) << 4) | mergeFilledCubes(getCubeFullId(c1), getCubeFullId(c2));
 }
 
 void initSlice(slice_s* s)
@@ -138,6 +183,7 @@ void SliceCollection::clear()
 {
 	data.clear();
 	cubes.clear();
+	cubes_wireframe.clear();
 	depth = 0;
 }
 
@@ -176,10 +222,25 @@ void SliceCollection::mergeLayers(SliceCollection** sc, int n)
 	}
 }
 
-void SliceCollection::draw(Camera& camera, Lighting& lighting)
+unsigned char SliceCollection::getCubeInfo(glm::ivec3 p)
 {
-	cubes.model = glm::rotate(glm::mat4(1.0f), angle, glm::vec3(0.0f, 0.0f, 1.0f)) * glm::translate(glm::mat4(1.0f), glm::vec3(-LEVEL_WIDTH / 2, -LEVEL_WIDTH / 2, 0.0f));
-	cubes.draw(camera, lighting);
+	if(p.z < 0 || p.z >= (int)data.size()) return 0;
+	if(p.x < 0 || p.x >= LEVEL_WIDTH) return 0;
+	if(p.y < 0 || p.y >= LEVEL_WIDTH) return 0;
+
+	return data[p.z].data[LEVEL_WIDTH - 1 - p.y][p.x];
+}
+
+void SliceCollection::draw(Camera& camera, Lighting& lighting, bool wireframe)
+{
+	if(!wireframe)
+	{
+		cubes.model = glm::rotate(glm::mat4(1.0f), angle, glm::vec3(0.0f, 0.0f, 1.0f)) * glm::translate(glm::mat4(1.0f), glm::vec3(-LEVEL_WIDTH / 2, -LEVEL_WIDTH / 2, 0.0f));
+		cubes.draw(camera, lighting);
+	}else{
+		cubes_wireframe.model = cubes.model;
+		cubes_wireframe.draw(camera, lighting);
+	}
 }
 
 void SliceCollection::setAngle(float angle)
@@ -241,10 +302,10 @@ bool Layer::update(float delta)
 	return ret;
 }
 
-void Layer::draw(Camera& camera, Lighting& lighting)
+void Layer::draw(Camera& camera, Lighting& lighting, bool wireframe)
 {
 	slices.setAngle(angle);
-	slices.draw(camera, lighting);
+	slices.draw(camera, lighting, wireframe);
 }
 
 void Layer::addSlice(slice_s s)
@@ -263,17 +324,17 @@ Level::Level(LevelGenerator& lg):
 
 }
 
-void Level::draw(Camera& camera, Lighting& lighting)
+void Level::draw(Camera& camera, Lighting& lighting, bool wireframe)
 {
 	for(int i = 0; i < LEVEL_NUMLAYERS; i++)
 	{
 		if(layers[i].state == LAYER_ROTATING)
 		{
-			layers[i].draw(camera, lighting);
+			layers[i].draw(camera, lighting, wireframe);
 		}
 	}
 
-	slices.draw(camera, lighting);
+	slices.draw(camera, lighting, wireframe);
 }
 
 void Level::update(float delta)
@@ -353,4 +414,17 @@ void Level::popSlice(bool update)
 int Level::getOffset()
 {
 	return slices.getBaseDepth();
+}
+
+unsigned char Level::getCubeInfo(glm::vec3 p)
+{
+	glm::ivec3 _p(p);
+
+	_p.x += LEVEL_WIDTH / 2;
+	_p.y += LEVEL_WIDTH / 2;
+	_p.z -= getOffset();
+
+	// std::cout << glm::to_string(_p) << std::endl;
+
+	return slices.getCubeInfo(_p);
 }

@@ -20,21 +20,6 @@
 
 Settings settings(800, 600);
 
-slice_s test_slice = 
-{
-	{ 
-	  {1, 0, 0, 0, 0, 0, 0, 0, 0},  
-	  {1, 0, 0, 0, 0, 0, 0, 0, 0}, 
-	  {1, 0, 0, 0, 0, 0, 0, 0, 0}, 
-	  {1, 0, 0, 0, 0, 0, 0, 0, 0}, 
-	  {1, 1, 0, 0, 0, 0, 0, 0, 0}, 
-	  {1, 0, 0, 0, 1, 0, 0, 0, 0}, 
-	  {1, 0, 0, 0, 0, 0, 0, 0, 0}, 
-	  {1, 0, 0, 0, 0, 0, 0, 0, 0}, 
-	  {1, 1, 1, 1, 1, 1, 1, 1, 1}
-	}	
-};
-
 int main(void)
 {
 	windowInit();
@@ -67,9 +52,6 @@ int main(void)
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
 
-	float angle = 0.0f;
-	float angle2 = 0.0f;
-
 	Player player;
 	Text text("hello", glm::vec2(0.0, 0.0));
 
@@ -84,6 +66,8 @@ int main(void)
 	// sound.play();
 
 	glClearColor(0.90f, 0.90f, 0.90f, 1.0f);
+
+	int layer = 0;
 
 	while(windowUpdate())
 	{
@@ -100,10 +84,10 @@ int main(void)
 		if(Input::isKeyHold(GLFW_KEY_I)) lighting.setLightPosition(0, lighting.getLightPosition(0) + glm::vec3(0.0, 0.0, 2.0) * float(deltaTime));
 		if(Input::isKeyHold(GLFW_KEY_K)) lighting.setLightPosition(0, lighting.getLightPosition(0) - glm::vec3(0.0, 0.0, 2.0) * float(deltaTime));
 
-		if(Input::isKeyHold(GLFW_KEY_E)) angle += 2.0f * deltaTime;
-		if(Input::isKeyHold(GLFW_KEY_R)) angle2 += 2.0f * deltaTime;
+		if(Input::isKeyPressed(GLFW_KEY_T)) level.rotateLayer(layer);
+		if(Input::isKeyPressed(GLFW_KEY_R)) layer++;
 
-		if(Input::isKeyPressed(GLFW_KEY_T)) level.rotateLayer(0);
+		layer %= LEVEL_NUMLAYERS;
 
 		lighting.setLightPosition(0, glm::normalize(lighting.getLightPosition(0)));
 
@@ -119,10 +103,12 @@ int main(void)
 			lightcube.model = glm::translate(glm::mat4(1.0f), lighting.getLightPosition(0)) * glm::mat4(glm::mat3(0.1f));
 			lightcube.draw(camera, lighting);
 
-			level.draw(camera, lighting);
+			level.draw(camera, lighting, false);
 
 			player.draw(camera, lighting, true);
 			player.draw(camera, lighting);
+
+			level.draw(camera, lighting, true);
 
 			// text.draw();
 		}

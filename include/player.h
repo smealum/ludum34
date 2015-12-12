@@ -25,13 +25,17 @@ class Player
 		void setNextMove(glm::vec3 direction);
 		void startMoving(void);
 
+		void setType(unsigned char type);
+
 	private:
 		glm::vec3 position;
 		glm::vec3 direction, next_direction;
-		Lighting shadow_lighting;
+		Lighting shadow_lighting, outline_lighting;
 		float angle;
 		playerState_t state;
-		Cubes cube;
+		Cubes cube, cube_outline;
+
+		unsigned char type;
 
 		std::queue<glm::vec3> moves;
 };

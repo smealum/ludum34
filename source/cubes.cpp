@@ -1,11 +1,13 @@
 #include "cubes.h"
 
-Cubes::Cubes(int n, int _current_n):
+static Lighting wireframe_lighting;
+
+Cubes::Cubes(int n, int _current_n, bool wireframe):
 	model(glm::mat4(1.0f)),
 	n(n),
 	data(new cube_s[n]),
-	shader(ShaderProgram::loadFromFile("shaders/cube.vsh", "shaders/simple.fsh", "shaders/cube.gsh", "cube"))
-	// shader(ShaderProgram::loadFromFile("shaders/cube.vsh", "shaders/simple.fsh", "shaders/cubes_wireframe.gsh", "cube"))
+	shader(ShaderProgram::loadFromFile("shaders/cube.vsh", "shaders/simple.fsh", wireframe ? "shaders/cubes_wireframe.gsh" : "shaders/cube.gsh", wireframe ? "cube_wireframe" : "cube")),
+	wireframe(wireframe)
 {
 	if(_current_n < 0) current_n = n;
 	else current_n = _current_n;
@@ -28,6 +30,12 @@ Cubes::Cubes(int n, int _current_n):
 	glBindFragDataLocation(shader.getHandle(), 0, "out_color");
 	shader.setAttribute("position", 3, GL_FALSE, 6, 0);
 	shader.setAttribute("color", 3, GL_FALSE, 6, 3);
+
+	// setup wireframe lighting
+	wireframe_lighting.setObjectColor(true);
+	wireframe_lighting.setLightEnabled(0, true);
+	wireframe_lighting.setLightADSS(0, 1.0f, 0.0f, 0.0f, 0.0f);
+	wireframe_lighting.setLightFresnel(0, 0.0f, 0.0f, 0.0f, 0.0f);
 }
 
 Cubes::~Cubes()
@@ -116,7 +124,14 @@ void Cubes::draw(Camera& camera, Lighting& lighting)
 	shader.setBuffers(vao, vbo, -1);
 
 	camera.updateCamera(shader);
-	lighting.update(shader);
+
+	if(wireframe)
+	{
+		wireframe_lighting.update(shader);
+		glDepthFunc(GL_LEQUAL);
+	}else{
+		lighting.update(shader);
+	}
 
 	shader.setUniform("model", model);
 	shader.setUniform("bTexture", false);
@@ -124,4 +139,9 @@ void Cubes::draw(Camera& camera, Lighting& lighting)
 	// printf("%f %f %f\n", data[0].position.x, data[0].position.y, data[0].position.z);
 
 	glDrawArrays(GL_POINTS, 0, current_n);
+
+	if(wireframe)
+	{
+		glDepthFunc(GL_LESS);
+	}
 }

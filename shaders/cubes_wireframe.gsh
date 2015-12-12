@@ -20,10 +20,12 @@ out VertexAttrib
 } vout;
 
 #define outputVertex(v, n) tmp = v; \
-	gl_Position = proj * vec4(tmp, 1.0); \
+    gl_Position = (proj * vec4(tmp, 1.0)); \
+    gl_Position /= gl_Position.w; \
+    gl_Position.z -= 0.000001; \
     vout.normal = normalize(n); \
-	vout.position = tmp; \
-	EmitVertex();
+    vout.position = tmp; \
+    EmitVertex();
 
 void main() {
 	mat4 viewmodel = view * model;

@@ -10,11 +10,21 @@
 #define LEVEL_NUMSLICES (32)
 #define SC_NUMCUBES (1024)
 
+#define getCubeFullId(v) ((v) & 0xf)
+#define getCubeWireframeId(v) (((v) >> 4) & 0xf)
+
 typedef enum
 {
 	LAYER_IDLE,
 	LAYER_ROTATING,
 }layerState_t;
+
+typedef struct
+{
+	glm::vec3 color;
+}cubeType_s;
+
+extern cubeType_s cubeTypes[16];
 
 class SliceCollection
 {
@@ -24,7 +34,7 @@ class SliceCollection
 		void addSlice(slice_s s);
 		void popSlice();
 
-		void draw(Camera& camera, Lighting& lighting);
+		void draw(Camera& camera, Lighting& lighting, bool wireframe = false);
 
 		void setAngle(float angle);
 		void setOrientation(int orientation);
@@ -37,9 +47,11 @@ class SliceCollection
 
 		void mergeLayers(SliceCollection** sc, int n);
 
+		unsigned char getCubeInfo(glm::ivec3 p);
+
 	private:
 		std::deque<slice_s> data;
-		Cubes cubes;
+		Cubes cubes, cubes_wireframe;
 		int base_depth, depth, orientation;
 		float angle;
 };
@@ -50,7 +62,7 @@ class Layer
 	public:
 		Layer();
 
-		void draw(Camera& camera, Lighting& lighting);
+		void draw(Camera& camera, Lighting& lighting, bool wireframe = false);
 		bool update(float delta);
 
 		void rotate();
@@ -70,7 +82,7 @@ class Level
 	public:
 		Level(LevelGenerator& lg);
 		
-		void draw(Camera& camera, Lighting& lighting);
+		void draw(Camera& camera, Lighting& lighting, bool wireframe = false);
 
 		void rotateLayer(int l);
 
@@ -81,6 +93,8 @@ class Level
 		void popSlice(bool update = true);
 
 		int getOffset();
+
+		unsigned char getCubeInfo(glm::vec3 p);
 
 	private:
 		LevelGenerator& generator;
