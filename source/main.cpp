@@ -27,7 +27,7 @@ slice_s test_slice =
 	  {1, 0, 0, 0, 0, 0, 0, 0, 1}, 
 	  {1, 0, 0, 0, 0, 0, 0, 0, 1}, 
 	  {1, 0, 0, 0, 0, 0, 0, 0, 1}, 
-	  {1, 0, 0, 0, 1, 0, 0, 0, 1}, 
+	  {1, 1, 0, 0, 1, 0, 0, 0, 1}, 
 	  {1, 0, 0, 0, 0, 0, 0, 0, 1}, 
 	  {1, 0, 0, 0, 0, 0, 0, 0, 1}, 
 	  {1, 0, 0, 0, 0, 0, 0, 0, 1}, 
@@ -74,6 +74,8 @@ int main(void)
 	level.addSliceLayer(0, test_slice);
 	level.addSliceLayer(0, test_slice);
 
+	level.addSliceLayer(1, test_slice);
+
 	double lastFrame = glfwGetTime();
 
 	// Sound sound("drumloop.wav");
@@ -92,10 +94,13 @@ int main(void)
 		if(Input::isKeyHold(GLFW_KEY_S)) camera.movePositionDouble(glm::dvec3(0.0, 0.0, 2.0) * deltaTime);
 		if(Input::isKeyHold(GLFW_KEY_D)) camera.movePositionDouble(glm::dvec3(2.0, 0.0, 0.0) * deltaTime);
 		if(Input::isKeyHold(GLFW_KEY_A)) camera.movePositionDouble(glm::dvec3(-2.0, 0.0, 0.0) * deltaTime);
+		
+		if(Input::isKeyPressed(GLFW_KEY_T)) level.rotateLayer(0);
 
 		player.update(deltaTime);
 		player.draw(camera, lighting);
 
+		level.update(deltaTime);
 		level.draw(camera, lighting);
 
 		text.draw();
