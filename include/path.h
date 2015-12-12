@@ -12,7 +12,7 @@
 typedef struct
 {
 	glm::vec3 position;
-	glm::vec3 color;
+	glm::vec4 color;
 }slab_s;
 
 class Path
@@ -23,7 +23,10 @@ class Path
 		void generate(Level& level, glm::vec3 start);
 		void updateGeometry();
 
-		void draw(Camera& camera, Lighting& lighting, bool shadow = false);
+		void update(float delta);
+		void draw(Camera& camera, Lighting& lighting);
+
+		void initAnimation();
 
 	private:
 		ShaderProgram& shader;
@@ -31,6 +34,8 @@ class Path
 		GLuint vao, vbo;
 		int length, cur_length;
 		slab_s data[PATH_MAXLENGTH];
+		float animation[PATH_MAXLENGTH];
+		float fade;
 };
 
 #endif

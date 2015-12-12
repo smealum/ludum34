@@ -4,12 +4,16 @@
 #include "glm.h"
 #include "cubes.h"
 #include "level.h"
+#include "path.h"
 
 #include <queue>
+
+#define PLAYER_PATHLENGTH (8)
 
 typedef enum
 {
 	PLAYER_IDLE,
+	PLAYER_NEWLYIDLE,
 	PLAYER_MOVING
 }playerState_t;
 
@@ -28,7 +32,7 @@ class Player
 		void setType(unsigned char type);
 		
 		glm::vec3 getPosition();
-
+		
 	private:
 		glm::vec3 position;
 		glm::vec3 direction, next_direction;
@@ -36,6 +40,7 @@ class Player
 		float angle;
 		playerState_t state;
 		Cubes cube, cube_outline;
+		Path path;
 
 		unsigned char type;
 

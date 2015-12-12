@@ -75,5 +75,5 @@ void main()
 
 	if(bTexture) out_color = texture2D( texture, vec2(vin.texcoord.x, 1.0 - vin.texcoord.y) ).zyxw * vec4(Ilight, 1.0);
 	else if(light_objectcolor) out_color = clamp(vin.color * vec4(Ilight, 1.0), 0.0, 1.0);
-	else out_color = clamp(vec4(Ilight, 1.0), 0.0, 1.0);
+	else out_color = clamp(vec4(Ilight, vin.color.w), 0.0, 1.0);
 }

@@ -6,9 +6,10 @@ Player::Player():
 	position(0.0f, 1.0f, 0.0f),
 	direction(1.0f, 0.0f, 0.0f),
 	angle(0.0f),
-	state(PLAYER_IDLE),
+	state(PLAYER_NEWLYIDLE),
 	cube(1),
 	cube_outline(1, 1, true),
+	path(PLAYER_PATHLENGTH),
 	type(0)
 {
 	cube.setColor(0, glm::vec3(255.0f, 174.0f, 68.0f) * (1.4f / 255), true);
@@ -63,6 +64,16 @@ void Player::update(Level& level, float delta)
 	{
 		case PLAYER_IDLE:
 			{
+				if(!moves.empty())
+				{
+					direction = moves.front();
+					moves.pop();
+					state = PLAYER_MOVING;
+				}
+			}
+			break;
+		case PLAYER_NEWLYIDLE:
+			{
 				unsigned char cube_type = level.getCubeInfo(position);
 
 				// printf("%d\n", cube_type);
@@ -72,12 +83,9 @@ void Player::update(Level& level, float delta)
 					setType(getCubeWireframeId(cube_type));
 				}
 
-				if(!moves.empty())
-				{
-					direction = moves.front();
-					moves.pop();
-					state = PLAYER_MOVING;
-				}
+				path.generate(level, getPosition());
+
+				state = PLAYER_IDLE;
 			}
 			break;
 		case PLAYER_MOVING:
@@ -87,7 +95,7 @@ void Player::update(Level& level, float delta)
 				angle = 0.0f;
 				position += direction;
 
-				state = PLAYER_IDLE;
+				state = PLAYER_NEWLYIDLE;
 
 				while(int(position.z - level.getOffset()) > 8)
 				{
@@ -96,6 +104,8 @@ void Player::update(Level& level, float delta)
 			}
 			break;
 	}
+
+	path.update(delta);
 
 	// TEMP
 	if(Input::isKeyPressed(GLFW_KEY_A))
@@ -138,6 +148,7 @@ void Player::draw(Camera& camera, Lighting& lighting, bool shadow)
 	cube.model = glm::translate(glm::mat4(1.0f), position - v) * cube.model;
 	
 	cube.draw(camera, shadow ? shadow_lighting : lighting);
+	path.draw(camera, shadow ? shadow_lighting : lighting);
 	
 	if(type > 1)
 	{

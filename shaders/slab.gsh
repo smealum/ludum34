@@ -28,10 +28,9 @@ void main()
 {
 	mat4 viewmodel = view * model;
 	
-	vec3 x = 0.5 * viewmodel[0].xyz;
-    // vec3 y = 0.5 * viewmodel[1].xyz;
+	vec3 x = 0.4 * viewmodel[0].xyz;
 	vec3 y = 0.4 * viewmodel[1].xyz;
-	vec3 z = 0.5 * viewmodel[2].xyz;
+	vec3 z = 0.4 * viewmodel[2].xyz;
 
 	vec3 pos = vec3(gl_in[0].gl_Position);
 	vec3 tmp;

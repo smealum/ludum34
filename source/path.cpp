@@ -1,3 +1,4 @@
+#include <math.h>
 #include "path.h"
 
 Path::Path(unsigned int length):
@@ -16,8 +17,17 @@ Path::Path(unsigned int length):
 	shader.setBuffers(vao, vbo, -1);
 	shader.use();
 	glBindFragDataLocation(shader.getHandle(), 0, "out_color");
-	shader.setAttribute("position", 3, GL_FALSE, 6, 0);
-	shader.setAttribute("color", 3, GL_FALSE, 6, 3);
+	shader.setAttribute("position", 3, GL_FALSE, 7, 0);
+	shader.setAttribute("color", 4, GL_FALSE, 7, 3);
+}
+
+void Path::initAnimation()
+{
+	for(int i = 0; i < cur_length; i++)
+	{
+		animation[i] = 3.0f + 5.0f * float(cur_length - i) / cur_length;
+	}
+	fade = 0.0f;
 }
 
 void Path::updateGeometry()
@@ -37,14 +47,29 @@ void Path::generate(Level& level, glm::vec3 start)
 	{
 		level.getNextLocation(position, position);
 		data[cur_length].position = position;
-		data[cur_length].color = glm::vec3(0.0f);
+		data[cur_length].color = glm::vec4(glm::vec3(232.0f, 108.0f, 0.0f) * (1.4f / 255), 1.0f);
 		cur_length++;
+	}
+
+	updateGeometry();
+	initAnimation();
+}
+
+void Path::update(float delta)
+{
+	fade += 1.0f * delta;
+	if(fade > 1.0f) fade = 1.0f;
+
+	for(int i = 0; i < cur_length; i++)
+	{
+		animation[i] += 2.0f * delta;
+		data[i].color.w = fade * (sin(animation[i]) + 1.0f) * 0.5f;
 	}
 
 	updateGeometry();
 }
 
-void Path::draw(Camera& camera, Lighting& lighting, bool shadow)
+void Path::draw(Camera& camera, Lighting& lighting)
 {
 	shader.use();
 

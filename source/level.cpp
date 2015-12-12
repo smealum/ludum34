@@ -67,7 +67,7 @@ float getTiling(glm::vec3 position)
 	int j = int(position.y);
 	int k = int(position.z);
 
-	return ((i + j + k) % 2) ? 1.0f : 0.985f;
+	return ((i + j + k) % 2) ? 1.0f : 0.97f;
 }
 
 void SliceCollection::addSlice(slice_s s)
@@ -493,26 +493,32 @@ bool Level::getNextLocation(glm::vec3 p, glm::vec3& out)
 
 	// std::cout << glm::to_string(p) << " " << (int)bottom << std::endl;
 
-	// TODO : do the entire fall ?
-	if(CUBEPROPERTY_IS_EMPTY(bottom))
+	glm::vec3 ret = p;
+
+	if(!CUBEPROPERTY_IS_EMPTY(bottom))
 	{
-		while(CUBEPROPERTY_IS_EMPTY(bottom) && !CUBEPROPERTY_IS_OUTOFBOUNDS(bottom))
-		{
-			p.y -= 1.0f;
-			bottom = getCubeProperties(p + glm::vec3(0.0f, -1.0f, 0.0f));
-		}
-		out = p;
-		return false;
+		cubePropertyDirection_t direction = CUBEPROPERTY_GET_DIRECTION(bottom);
+
+		ret += cubeDirections[direction];
 	}
-
-	cubePropertyDirection_t direction = CUBEPROPERTY_GET_DIRECTION(bottom);
-
-	glm::vec3 ret = p + cubeDirections[direction];
 
 	cubeProperties_t next = getCubeProperties(ret);
 
 	if(CUBEPROPERTY_IS_EMPTY(next))
 	{
+		bottom = getCubeProperties(ret + glm::vec3(0.0f, -1.0f, 0.0f));
+
+		if(CUBEPROPERTY_IS_EMPTY(bottom))
+		{
+			while(CUBEPROPERTY_IS_EMPTY(bottom) && !CUBEPROPERTY_IS_OUTOFBOUNDS(bottom))
+			{
+				ret.y -= 1.0f;
+				bottom = getCubeProperties(ret + glm::vec3(0.0f, -1.0f, 0.0f));
+			}
+			out = ret;
+			return false;
+		}
+
 		out = ret;
 		return false;
 	}
