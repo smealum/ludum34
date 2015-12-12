@@ -7,11 +7,32 @@
 
 cubeType_s cubeTypes[16] =
 {
+	// EMPTY
 	(cubeType_s){glm::vec3(0.0f)},
-	(cubeType_s){glm::vec3(1.0f, 1.0f, 1.0f)},
-	(cubeType_s){glm::vec3(66.0f, 130.0f, 255.0f) * (1.0f / 255)},
-	(cubeType_s){glm::vec3(255.0f, 59.0f, 24.0f) * (1.0f / 255)},
-	(cubeType_s){glm::vec3(147.0f, 37.0f, 255.0f) * (1.0f / 255)},
+	// DEFAULT
+	(cubeType_s){
+		glm::vec3(1.0f, 1.0f, 1.0f),
+		CUBEPROPERTY_DISCRIMINATE(0) | CUBEPROPERTY_CLIMBABLE(0) | CUBEPROPERTY_DIRECTION(CUBEPROPERTY_DIRECTION_FORWARD),
+		CUBEPROPERTY_CLIMBABLE(0) | CUBEPROPERTY_DIRECTION(CUBEPROPERTY_DIRECTION_FORWARD),
+	},
+	// BLUE
+	(cubeType_s){
+		glm::vec3(66.0f, 130.0f, 255.0f) * (1.0f / 255),
+		CUBEPROPERTY_DISCRIMINATE(1) | CUBEPROPERTY_CLIMBABLE(0) | CUBEPROPERTY_DIRECTION(CUBEPROPERTY_DIRECTION_FORWARD),
+		CUBEPROPERTY_CLIMBABLE(0) | CUBEPROPERTY_DIRECTION(CUBEPROPERTY_DIRECTION_LEFT),
+	},
+	// RED
+	(cubeType_s){
+		glm::vec3(255.0f, 59.0f, 24.0f) * (1.0f / 255),
+		CUBEPROPERTY_DISCRIMINATE(1) | CUBEPROPERTY_CLIMBABLE(0) | CUBEPROPERTY_DIRECTION(CUBEPROPERTY_DIRECTION_FORWARD),
+		CUBEPROPERTY_CLIMBABLE(0) | CUBEPROPERTY_DIRECTION(CUBEPROPERTY_DIRECTION_RIGHT),
+	},
+	// PURPLE
+	(cubeType_s){
+		glm::vec3(147.0f, 37.0f, 255.0f) * (1.0f / 255),
+		CUBEPROPERTY_DISCRIMINATE(1) | CUBEPROPERTY_CLIMBABLE(1) | CUBEPROPERTY_DIRECTION(CUBEPROPERTY_DIRECTION_FORWARD),
+		CUBEPROPERTY_CLIMBABLE(1) | CUBEPROPERTY_DIRECTION(CUBEPROPERTY_DIRECTION_FORWARD),
+	},
 };
 
 SliceCollection::SliceCollection():
@@ -48,7 +69,6 @@ float getTiling(glm::vec3 position)
 
 	return ((i + j + k) % 2) ? 1.0f : 0.985f;
 }
-
 
 void SliceCollection::addSlice(slice_s s)
 {
@@ -222,13 +242,30 @@ void SliceCollection::mergeLayers(SliceCollection** sc, int n)
 	}
 }
 
-unsigned char SliceCollection::getCubeInfo(glm::ivec3 p)
+unsigned char SliceCollection::getCubeInfo(glm::ivec3 p, bool* out_of_bounds)
 {
-	if(p.z < 0 || p.z >= (int)data.size()) return 0;
-	if(p.x < 0 || p.x >= LEVEL_WIDTH) return 0;
-	if(p.y < 0 || p.y >= LEVEL_WIDTH) return 0;
+	if(p.z < 0 || p.z >= (int)data.size()) {if(out_of_bounds) *out_of_bounds = true; return 0;}
+	if(p.x < 0 || p.x >= LEVEL_WIDTH) {if(out_of_bounds) *out_of_bounds = true; return 0;}
+	if(p.y < 0 || p.y >= LEVEL_WIDTH) {if(out_of_bounds) *out_of_bounds = true; return 0;}
+
+	if(out_of_bounds) *out_of_bounds = false;
 
 	return data[p.z].data[LEVEL_WIDTH - 1 - p.y][p.x];
+}
+
+cubeProperties_t _getCubeProperties(unsigned char cube_info)
+{
+	unsigned char cubeFullId = getCubeFullId(cube_info);
+	unsigned char cubeWireframeId = getCubeWireframeId(cube_info);
+
+	return (CUBEPROPERTY_COLOR(cube_info) | cubeTypes[cubeFullId].full_properties | cubeTypes[cubeWireframeId].wireframe_properties) & ~(CUBEPROPERTY_CLIMBABLE(cubeFullId == 0));
+}
+
+cubeProperties_t SliceCollection::getCubeProperties(glm::ivec3 p)
+{
+	bool out_of_bounds = false;
+	unsigned char cube_info = getCubeInfo(p, &out_of_bounds);
+	return _getCubeProperties(cube_info) | CUBEPROPERTY_OUTOFBOUNDS(out_of_bounds);
 }
 
 void SliceCollection::draw(Camera& camera, Lighting& lighting, bool wireframe)
@@ -427,4 +464,67 @@ unsigned char Level::getCubeInfo(glm::vec3 p)
 	// std::cout << glm::to_string(_p) << std::endl;
 
 	return slices.getCubeInfo(_p);
+}
+
+cubeProperties_t Level::getCubeProperties(glm::vec3 p)
+{
+	glm::ivec3 _p(p);
+
+	_p.x += LEVEL_WIDTH / 2;
+	_p.y += LEVEL_WIDTH / 2;
+	_p.z -= getOffset();
+
+	// std::cout << glm::to_string(_p) << std::endl;
+
+	return slices.getCubeProperties(_p);
+}
+
+glm::vec3 cubeDirections[] =
+{
+	glm::vec3(0.0f, 0.0f, 1.0f), // CUBEPROPERTY_DIRECTION_FORWARD = 0,
+	glm::vec3(0.0f, 0.0f, -1.0f), // CUBEPROPERTY_DIRECTION_BACKWARD = 1,
+	glm::vec3(1.0f, 0.0f, 0.0f), // CUBEPROPERTY_DIRECTION_LEFT = 2,
+	glm::vec3(-1.0f, 0.0f, 0.0f), // CUBEPROPERTY_DIRECTION_RIGHT = 3,
+};
+
+bool Level::getNextLocation(glm::vec3 p, glm::vec3& out)
+{
+	cubeProperties_t bottom = getCubeProperties(p + glm::vec3(0.0f, -1.0f, 0.0f));
+
+	// std::cout << glm::to_string(p) << " " << (int)bottom << std::endl;
+
+	// TODO : do the entire fall ?
+	if(CUBEPROPERTY_IS_EMPTY(bottom))
+	{
+		while(CUBEPROPERTY_IS_EMPTY(bottom) && !CUBEPROPERTY_IS_OUTOFBOUNDS(bottom))
+		{
+			p.y -= 1.0f;
+			bottom = getCubeProperties(p + glm::vec3(0.0f, -1.0f, 0.0f));
+		}
+		out = p;
+		return false;
+	}
+
+	cubePropertyDirection_t direction = CUBEPROPERTY_GET_DIRECTION(bottom);
+
+	glm::vec3 ret = p + cubeDirections[direction];
+
+	cubeProperties_t next = getCubeProperties(ret);
+
+	if(CUBEPROPERTY_IS_EMPTY(next))
+	{
+		out = ret;
+		return false;
+	}
+
+	while(CUBEPROPERTY_GET_CLIMBABLE(getCubeProperties(ret))) ret += glm::vec3(0.0f, 1.0f, 0.0f);
+
+	if(CUBEPROPERTY_IS_EMPTY(getCubeProperties(ret)))
+	{
+		out = ret;
+		return false;
+	}
+
+	out = p;
+	return false;
 }

@@ -26,6 +26,8 @@ class Player
 		void startMoving(void);
 
 		void setType(unsigned char type);
+		
+		glm::vec3 getPosition();
 
 	private:
 		glm::vec3 position;

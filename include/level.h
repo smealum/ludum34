@@ -13,6 +13,28 @@
 #define getCubeFullId(v) ((v) & 0xf)
 #define getCubeWireframeId(v) (((v) >> 4) & 0xf)
 
+#define CUBEPROPERTY_COLOR(v) ((v) & 0xFF)
+#define CUBEPROPERTY_DIRECTION(v) (((v) & 0x7) << 8)
+#define CUBEPROPERTY_CLIMBABLE(v) (((v) & 0x1) << 11)
+#define CUBEPROPERTY_DISCRIMINATE(v) (((v) & 0x1) << 12)
+#define CUBEPROPERTY_OUTOFBOUNDS(v) (((v) & 0x1) << 31)
+#define CUBEPROPERTY_GET_COLOR(v) ((v) & 0xFF)
+#define CUBEPROPERTY_GET_DIRECTION(v) (cubePropertyDirection_t)(((v) >> 8) & 0x7)
+#define CUBEPROPERTY_GET_CLIMBABLE(v) (bool)(((v) >> 11) & 0x1)
+#define CUBEPROPERTY_IS_DISCRIMINATE(v) (bool)(((v) >> 12) & 0x1)
+#define CUBEPROPERTY_IS_OUTOFBOUNDS(v) (bool)(((v) >> 31) & 0x1)
+#define CUBEPROPERTY_IS_EMPTY(v) (bool)(getCubeFullId(CUBEPROPERTY_GET_COLOR(v)) == 0)
+
+typedef enum
+{
+	CUBEPROPERTY_DIRECTION_FORWARD = 0,
+	CUBEPROPERTY_DIRECTION_BACKWARD = 1,
+	CUBEPROPERTY_DIRECTION_LEFT = 2,
+	CUBEPROPERTY_DIRECTION_RIGHT = 3,
+}cubePropertyDirection_t;
+
+typedef unsigned int cubeProperties_t;
+
 typedef enum
 {
 	LAYER_IDLE,
@@ -22,6 +44,7 @@ typedef enum
 typedef struct
 {
 	glm::vec3 color;
+	cubeProperties_t full_properties, wireframe_properties;
 }cubeType_s;
 
 extern cubeType_s cubeTypes[16];
@@ -47,7 +70,8 @@ class SliceCollection
 
 		void mergeLayers(SliceCollection** sc, int n);
 
-		unsigned char getCubeInfo(glm::ivec3 p);
+		unsigned char getCubeInfo(glm::ivec3 p, bool* out_of_bounds = NULL);
+		cubeProperties_t getCubeProperties(glm::ivec3 p);
 
 	private:
 		std::deque<slice_s> data;
@@ -95,6 +119,9 @@ class Level
 		int getOffset();
 
 		unsigned char getCubeInfo(glm::vec3 p);
+		cubeProperties_t getCubeProperties(glm::vec3 p);
+
+		bool getNextLocation(glm::vec3 p, glm::vec3& out);
 
 	private:
 		LevelGenerator& generator;

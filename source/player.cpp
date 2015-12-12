@@ -47,6 +47,11 @@ void Player::setType(unsigned char type)
 	this->type = type;
 }
 
+glm::vec3 Player::getPosition()
+{
+	return position;
+}
+
 void Player::updateCamera(Camera& camera)
 {
 	camera.setPosition(position + direction * float(angle / (M_PI / 2.0f)) + glm::vec3(-5.0f, 10.0f, -5.0f));
@@ -59,6 +64,8 @@ void Player::update(Level& level, float delta)
 		case PLAYER_IDLE:
 			{
 				unsigned char cube_type = level.getCubeInfo(position);
+
+				// printf("%d\n", cube_type);
 
 				if(cube_type > 0)
 				{

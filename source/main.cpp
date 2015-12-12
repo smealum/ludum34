@@ -16,6 +16,7 @@
 #include "obj.h"
 #include "input.h"
 #include "level.h"
+#include "path.h"
 #include "audio.h"
 
 Settings settings(800, 600);
@@ -59,6 +60,8 @@ int main(void)
 	Level level(levelGenerator);
 	Cubes lightcube(1);
 
+	Path path(6);
+
 	double lastFrame = glfwGetTime();
 
 	// Sound sound("drumloop.wav");
@@ -87,6 +90,8 @@ int main(void)
 		if(Input::isKeyPressed(GLFW_KEY_T)) level.rotateLayer(layer);
 		if(Input::isKeyPressed(GLFW_KEY_R)) layer++;
 
+		if(Input::isKeyPressed(GLFW_KEY_E)) path.generate(level, player.getPosition());
+
 		layer %= LEVEL_NUMLAYERS;
 
 		lighting.setLightPosition(0, glm::normalize(lighting.getLightPosition(0)));
@@ -104,6 +109,8 @@ int main(void)
 			lightcube.draw(camera, lighting);
 
 			level.draw(camera, lighting, false);
+
+			path.draw(camera, lighting, false);
 
 			player.draw(camera, lighting, true);
 			player.draw(camera, lighting);
