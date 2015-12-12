@@ -28,25 +28,25 @@ void Player::startMoving(void)
 void Player::update(float delta)
 {
 	// TEMP
-	if(Input::isKeyPressed(GLFW_KEY_G))
+	if(Input::isKeyPressed(GLFW_KEY_V))
 	{
 		setNextMove(glm::vec3(1.0f, 0.0f, 0.0f));
 		startMoving();
 	}
 
-	if(Input::isKeyPressed(GLFW_KEY_B))
+	if(Input::isKeyPressed(GLFW_KEY_N))
 	{
 		setNextMove(glm::vec3(-1.0f, 0.0f, 0.0f));
 		startMoving();
 	}
 
-	if(Input::isKeyPressed(GLFW_KEY_V))
+	if(Input::isKeyPressed(GLFW_KEY_G))
 	{
 		setNextMove(glm::vec3(0.0f, 0.0f, 1.0f));
 		startMoving();
 	}
 
-	if(Input::isKeyPressed(GLFW_KEY_N))
+	if(Input::isKeyPressed(GLFW_KEY_B))
 	{
 		setNextMove(glm::vec3(0.0f, 0.0f, -1.0f));
 		startMoving();

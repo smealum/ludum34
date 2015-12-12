@@ -15,7 +15,7 @@ typedef struct
 class Cubes
 {
 	public:
-		Cubes(int n);
+		Cubes(int n, int current_n = -1);
 		~Cubes();
 
 		void draw(Camera& camera, Lighting& lighting);
@@ -24,10 +24,16 @@ class Cubes
 		void setPosition(int i, glm::vec3 p, bool update = false);
 		void setColor(int i, glm::vec3 c, bool update = false);
 
+		void clear();
+
+		int addCube(glm::vec3 p, glm::vec3 c, bool update = false);
+		void removeCube(int id, bool update = false);
+		void removeDepth(float depth);
+
 		glm::mat4 model;
 
 	private:
-		int n;
+		int current_n, n;
 		cube_s* data;
 		ShaderProgram& shader;
 		GLuint vao, vbo;
