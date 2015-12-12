@@ -21,6 +21,8 @@ Lighting::Lighting()
 		lights_enabled[i] = false;
 		lights_directional[i] = false;
 	}
+
+	light_objectcolor = true;
 }
 
 void Lighting::update(ShaderProgram &prog)
@@ -39,6 +41,8 @@ void Lighting::update(ShaderProgram &prog)
 
 	prog.setUniform("lights_directional", lights_directional, NUM_LIGHTS);
 	prog.setUniform("lights_enabled", lights_enabled, NUM_LIGHTS);
+	
+	prog.setUniform("light_objectcolor", light_objectcolor);
 }
 
 glm::vec3 Lighting::getLightPosition(int id)
@@ -46,6 +50,11 @@ glm::vec3 Lighting::getLightPosition(int id)
 	if(id < 0 || id >= NUM_LIGHTS) return glm::vec3(0.0f);
 
 	return lights_position[id];
+}
+
+void Lighting::setObjectColor(bool enabled)
+{
+	light_objectcolor = enabled;
 }
 
 void Lighting::setLightEnabled(int id, bool enabled)

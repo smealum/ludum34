@@ -117,9 +117,10 @@ int main(void)
 			lightcube.model = glm::translate(glm::mat4(1.0f), lighting.getLightPosition(0)) * glm::mat4(glm::mat3(0.1f));
 			lightcube.draw(camera, lighting);
 
-			player.draw(camera, lighting);
-
 			level.draw(camera, lighting);
+
+			player.draw(camera, lighting, true);
+			player.draw(camera, lighting);
 
 			// text.draw();
 		}

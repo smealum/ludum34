@@ -27,6 +27,7 @@ class Lighting
 		void setLightFresnelBias(int id, float v);
 		void setLightFresnelScale(int id, float v);
 		void setLightFresnelPower(int id, float v);
+		void setObjectColor(bool enabled);
 
 		void update(ShaderProgram &prog);
 
@@ -38,6 +39,7 @@ class Lighting
 		float lights_fresnelBias[NUM_LIGHTS], lights_fresnelScale[NUM_LIGHTS], lights_fresnelPower[NUM_LIGHTS];
 		int lights_enabled[NUM_LIGHTS];
 		int lights_directional[NUM_LIGHTS];
+		int light_objectcolor;
 
 };
 

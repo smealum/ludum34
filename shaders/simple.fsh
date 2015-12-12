@@ -21,6 +21,8 @@ uniform float lights_fresnelBias[NUM_LIGHTS], lights_fresnelScale[NUM_LIGHTS], l
 uniform bool lights_enabled[NUM_LIGHTS];
 uniform bool lights_directional[NUM_LIGHTS];
 
+uniform bool light_objectcolor;
+
 out vec4 out_color;
 
 void main()
@@ -72,5 +74,6 @@ void main()
 	}
 
 	if(bTexture) out_color = texture2D( texture, vec2(vin.texcoord.x, 1.0 - vin.texcoord.y) ).zyxw * vec4(Ilight, 1.0);
-	else out_color = clamp(vin.color * vec4(Ilight, 1.0), 0.0, 1.0);
+	else if(light_objectcolor) out_color = clamp(vin.color * vec4(Ilight, 1.0), 0.0, 1.0);
+	else out_color = clamp(vec4(Ilight, 1.0), 0.0, 1.0);
 }
