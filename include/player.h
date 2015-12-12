@@ -18,6 +18,7 @@ class Player
 		Player();
 
 		void update(float delta);
+		void updateCamera(Camera& camera);
 		void draw(Camera& camera, Lighting& lighting);
 		
 		void setNextMove(glm::vec3 direction);

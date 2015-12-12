@@ -23,14 +23,14 @@ Settings settings(800, 600);
 slice_s test_slice = 
 {
 	{ 
-	  {1, 1, 1, 1, 1, 1, 1, 1, 1},  
-	  {1, 0, 0, 0, 0, 0, 0, 0, 1}, 
-	  {1, 0, 0, 0, 0, 0, 0, 0, 1}, 
-	  {1, 0, 0, 0, 0, 0, 0, 0, 1}, 
-	  {1, 1, 0, 0, 1, 0, 0, 0, 1}, 
-	  {1, 0, 0, 0, 0, 0, 0, 0, 1}, 
-	  {1, 0, 0, 0, 0, 0, 0, 0, 1}, 
-	  {1, 0, 0, 0, 0, 0, 0, 0, 1}, 
+	  {1, 0, 0, 0, 0, 0, 0, 0, 0},  
+	  {1, 0, 0, 0, 0, 0, 0, 0, 0}, 
+	  {1, 0, 0, 0, 0, 0, 0, 0, 0}, 
+	  {1, 0, 0, 0, 0, 0, 0, 0, 0}, 
+	  {1, 1, 0, 0, 0, 0, 0, 0, 0}, 
+	  {1, 0, 0, 0, 1, 0, 0, 0, 0}, 
+	  {1, 0, 0, 0, 0, 0, 0, 0, 0}, 
+	  {1, 0, 0, 0, 0, 0, 0, 0, 0}, 
 	  {1, 1, 1, 1, 1, 1, 1, 1, 1}
 	}	
 };
@@ -49,8 +49,11 @@ int main(void)
 
 	Lighting lighting;
 
-	lighting.setLightPosition(0, glm::vec3(2.0f, 2.0f, 2.0f));
+	// lighting.setLightPosition(0, glm::vec3(-0.148422, 0.529210, -0.835409));
+	lighting.setLightPosition(0, glm::vec3(0.575778, 0.324158, -0.750601));
 	lighting.setLightEnabled(0, true);
+	lighting.setLightDirectional(0, true);
+	lighting.setLightFresnel(0, 0.0f);
 	lighting.setLightShininess(0, 3.0f);
 
 	glViewport(0, 0, settings.width, settings.height);
@@ -69,7 +72,13 @@ int main(void)
 	Text text("hello", glm::vec2(0.0, 0.0));
 
 	Level level;
+	Cubes lightcube(1);
 
+	level.addSliceLayer(0, test_slice);
+	level.addSliceLayer(0, test_slice);
+	level.addSliceLayer(0, test_slice);
+	level.addSliceLayer(0, test_slice);
+	level.addSliceLayer(0, test_slice);
 	level.addSliceLayer(0, test_slice);
 	level.addSliceLayer(0, test_slice);
 	level.addSliceLayer(0, test_slice);
@@ -82,6 +91,8 @@ int main(void)
 
 	// sound.play();
 
+	glClearColor(0.90f, 0.90f, 0.90f, 1.0f);
+
 	while(windowUpdate())
 	{
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -90,23 +101,38 @@ int main(void)
 		double deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 
-		if(Input::isKeyHold(GLFW_KEY_W)) camera.movePositionDouble(glm::dvec3(0.0, 0.0, -2.0) * deltaTime);
-		if(Input::isKeyHold(GLFW_KEY_S)) camera.movePositionDouble(glm::dvec3(0.0, 0.0, 2.0) * deltaTime);
-		if(Input::isKeyHold(GLFW_KEY_D)) camera.movePositionDouble(glm::dvec3(2.0, 0.0, 0.0) * deltaTime);
-		if(Input::isKeyHold(GLFW_KEY_A)) camera.movePositionDouble(glm::dvec3(-2.0, 0.0, 0.0) * deltaTime);
-		
-		if(Input::isKeyPressed(GLFW_KEY_T)) level.rotateLayer(0);
-
-		player.update(deltaTime);
-		player.draw(camera, lighting);
-
-		level.update(deltaTime);
-		level.draw(camera, lighting);
-
-		text.draw();
+		if(Input::isKeyHold(GLFW_KEY_Y)) lighting.setLightPosition(0, lighting.getLightPosition(0) + glm::vec3(2.0, 0.0, 0.0) * float(deltaTime));
+		if(Input::isKeyHold(GLFW_KEY_H)) lighting.setLightPosition(0, lighting.getLightPosition(0) - glm::vec3(2.0, 0.0, 0.0) * float(deltaTime));
+		if(Input::isKeyHold(GLFW_KEY_U)) lighting.setLightPosition(0, lighting.getLightPosition(0) + glm::vec3(0.0, 2.0, 0.0) * float(deltaTime));
+		if(Input::isKeyHold(GLFW_KEY_J)) lighting.setLightPosition(0, lighting.getLightPosition(0) - glm::vec3(0.0, 2.0, 0.0) * float(deltaTime));
+		if(Input::isKeyHold(GLFW_KEY_I)) lighting.setLightPosition(0, lighting.getLightPosition(0) + glm::vec3(0.0, 0.0, 2.0) * float(deltaTime));
+		if(Input::isKeyHold(GLFW_KEY_K)) lighting.setLightPosition(0, lighting.getLightPosition(0) - glm::vec3(0.0, 0.0, 2.0) * float(deltaTime));
 
 		if(Input::isKeyHold(GLFW_KEY_E)) angle += 2.0f * deltaTime;
 		if(Input::isKeyHold(GLFW_KEY_R)) angle2 += 2.0f * deltaTime;
+
+		if(Input::isKeyPressed(GLFW_KEY_T)) level.rotateLayer(0);
+
+		lighting.setLightPosition(0, glm::normalize(lighting.getLightPosition(0)));
+
+		// std::cout << glm::to_string(lighting.getLightPosition(0)) << std::endl;
+		
+		{
+			level.update(deltaTime);
+			player.update(deltaTime);
+			player.updateCamera(camera);
+		}
+
+		{
+			lightcube.model = glm::translate(glm::mat4(1.0f), lighting.getLightPosition(0)) * glm::mat4(glm::mat3(0.1f));
+			lightcube.draw(camera, lighting);
+
+			player.draw(camera, lighting);
+
+			level.draw(camera, lighting);
+
+			// text.draw();
+		}
 	}
 
 	textExit();

@@ -20,7 +20,7 @@ void SliceCollection::addSlice(slice_s s)
 		{
 			if(s.data[i][j])
 			{
-				cubes.addCube(glm::vec3(i * 1.0f, j * 1.0f, depth * 1.0f), glm::vec3(1.0f, 0.0f, 1.0f));
+				cubes.addCube(glm::vec3(j * 1.0f, (LEVEL_WIDTH - 1 - i) * 1.0f, depth * 1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
 			}
 		}
 	}

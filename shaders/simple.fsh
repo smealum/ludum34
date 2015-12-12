@@ -19,6 +19,7 @@ uniform vec3 lights_color[NUM_LIGHTS];
 uniform float lights_ambient[NUM_LIGHTS], lights_diffuse[NUM_LIGHTS], lights_specular[NUM_LIGHTS], lights_fresnel[NUM_LIGHTS], lights_shininess[NUM_LIGHTS];
 uniform float lights_fresnelBias[NUM_LIGHTS], lights_fresnelScale[NUM_LIGHTS], lights_fresnelPower[NUM_LIGHTS];
 uniform bool lights_enabled[NUM_LIGHTS];
+uniform bool lights_directional[NUM_LIGHTS];
 
 out vec4 out_color;
 
@@ -30,12 +31,15 @@ void main()
 	{
 		if(!lights_enabled[i]) continue;
 
-		vec3 light_pos = vec3(view * vec4(lights_position[i], 1.0));
+		vec3 light_pos = lights_position[i];
+		if(!lights_directional[i]) light_pos = vec3(view * vec4(light_pos, 1.0));
 
 		vec3 N = mat3(model) * vin.normal;
 		vec3 VN = mat3(model) * vin.normal;
 
-		vec3 L = normalize(light_pos - vin.position);   
+		vec3 L;
+		if(!lights_directional[i]) L = normalize(light_pos - vin.position);
+		else L = normalize(light_pos);
 		vec3 E = normalize(-vin.position);
 		vec3 R = normalize(-reflect(L, VN));
 
@@ -68,5 +72,5 @@ void main()
 	}
 
 	if(bTexture) out_color = texture2D( texture, vec2(vin.texcoord.x, 1.0 - vin.texcoord.y) ).zyxw * vec4(Ilight, 1.0);
-	else out_color = vin.color * vec4(Ilight, 1.0);
+	else out_color = clamp(vin.color * vec4(Ilight, 1.0), 0.0, 1.0);
 }

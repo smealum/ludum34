@@ -9,16 +9,17 @@ Lighting::Lighting()
 		lights_ambient[i] = 0.2f;
 		lights_diffuse[i] = 0.5f;
 		lights_specular[i] = 0.7f;
-		lights_fresnel[i] = 1.0f;
-		lights_shininess[i] = 0.5f;
+		lights_fresnel[i] = 0.7f;
+		lights_shininess[i] = 1.0f;
 
 		lights_fresnelBias[i] = 0.1f;
 		lights_fresnelScale[i] = 0.7f;
-		lights_fresnelPower[i] = 3.0f;
+		lights_fresnelPower[i] = 2.0f;
 
 		lights_position[i] = glm::vec3(0.0f);
 
 		lights_enabled[i] = false;
+		lights_directional[i] = false;
 	}
 }
 
@@ -36,7 +37,15 @@ void Lighting::update(ShaderProgram &prog)
 
 	prog.setUniform("lights_position", lights_position, NUM_LIGHTS);
 
+	prog.setUniform("lights_directional", lights_directional, NUM_LIGHTS);
 	prog.setUniform("lights_enabled", lights_enabled, NUM_LIGHTS);
+}
+
+glm::vec3 Lighting::getLightPosition(int id)
+{
+	if(id < 0 || id >= NUM_LIGHTS) return glm::vec3(0.0f);
+
+	return lights_position[id];
 }
 
 void Lighting::setLightEnabled(int id, bool enabled)
@@ -44,6 +53,13 @@ void Lighting::setLightEnabled(int id, bool enabled)
 	if(id < 0 || id >= NUM_LIGHTS) return;
 
 	lights_enabled[id] = enabled;
+}
+
+void Lighting::setLightDirectional(int id, bool directional)
+{
+	if(id < 0 || id >= NUM_LIGHTS) return;
+
+	lights_directional[id] = directional;
 }
 
 void Lighting::setLightPosition(int id, glm::vec3 position)

@@ -11,8 +11,11 @@ class Lighting
 {
 	public:
 		Lighting();
+		
+		glm::vec3 getLightPosition(int id);
 
 		void setLightEnabled(int id, bool enabled);
+		void setLightDirectional(int id, bool directional);
 		void setLightPosition(int id, glm::vec3 position);
 		void setLightADSS(int id, float ambient, float diffuse, float specular, float shininess);
 		void setLightFresnel(int id, float fresnel, float fresnelBias, float fresnelScale, float fresnelPower);
@@ -34,6 +37,7 @@ class Lighting
 		float lights_ambient[NUM_LIGHTS], lights_diffuse[NUM_LIGHTS], lights_specular[NUM_LIGHTS], lights_fresnel[NUM_LIGHTS], lights_shininess[NUM_LIGHTS];
 		float lights_fresnelBias[NUM_LIGHTS], lights_fresnelScale[NUM_LIGHTS], lights_fresnelPower[NUM_LIGHTS];
 		int lights_enabled[NUM_LIGHTS];
+		int lights_directional[NUM_LIGHTS];
 
 };
 
