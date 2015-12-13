@@ -66,7 +66,9 @@ int main(void)
 
 	// sound.play();
 
-	glClearColor(0.90f, 0.90f, 0.90f, 1.0f);
+	// glClearColor(0.60f, 0.60f, 0.60f, 1.0f);
+	// glClearColor(9.0f / 255.0f, 29.0f / 255.0f, 54.0f / 255.0f, 1.0f);
+	glClearColor(19.0f / 255.0f, 31.0f / 255.0f, 46.0f / 255.0f, 1.0f);
 
 	int layer = 0;
 
@@ -125,7 +127,7 @@ int main(void)
 
 			player.draw(camera, lighting, true);
 			player.draw(camera, lighting);
-
+			
 			level.draw(camera, lighting, true);
 
 			hud.draw();

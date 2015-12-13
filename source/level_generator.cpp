@@ -497,7 +497,7 @@ void LevelGeneratorRandom::generatePath()
 			if(path.size() == s || cur_depth_cnt > LEVEL_WIDTH) stuckCounter++;
 			// printf("length %d\n", (int)path.size());
 		}
-		printf("%d tries", tries);
+		printf("%d tries\n", tries);
 		tries++;
 	}while(path.back().z < length);
 
@@ -549,11 +549,6 @@ slice_s LevelGeneratorRandom::getSlice(int layer)
 	{
 		glm::ivec3 p = c.position;
 		unsigned char value = constraints.getConstrainedCubeLayer(layer, c);
-
-		if(layer == 0)
-		{
-			std::cout << glm::to_string(c.position) << ", " << (int)value << std::endl;
-		}
 
 		if(value != 0)
 		{
@@ -736,34 +731,21 @@ void ConstraintManager::flushInstancedConstraints()
 			{
 				int cur_depth = -1;
 
-				if(l == 0) printf("starting\n");
-
 				for(int i = 0; independent && i < (int)instanced_data_slice[j].size(); i++)
 				{
-					if(l == 0) std::cout << glm::to_string(instanced_data_slice[j][i].position) << ", " << (int)getConstrainedCubeLayer(l, instanced_data_slice[j][i].position) << std::endl;
 					if(isConstrainedCubeInLayer(l, instanced_data_slice[j][i].position))
 					{
 						if(cur_depth < 0)
 						{
 							cur_depth = instanced_data_slice[j][i].position.z;
-							if(l == 0)
-							{
-								// std::cout << glm::to_string(instanced_data_slice[j][i].position) << ", " << (int)getConstrainedCubeLayer(l, instanced_data_slice[j][i].position) << std::endl;
-							}
 						}
 						else if(cur_depth != instanced_data_slice[j][i].position.z)
 						{
 							independent = false;
-							if(l == 0)
-							{
-								// std::cout << glm::to_string(instanced_data_slice[j][i].position) << ", " << (int)getConstrainedCubeLayer(l, instanced_data_slice[j][i].position) << std::endl;
-							}
 						}
 					}
 				}
 			}
-
-			if(l == 0) std::cout << independent << std::endl;
 
 			if(independent) orientations[l].push_back(rand() % 4);
 			else orientations[l].push_back((orientations[l].size() > 0) ? orientations[l].back() : 0);

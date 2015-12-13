@@ -8,7 +8,7 @@
 cubeType_s cubeTypes[16] =
 {
 	// EMPTY
-	(cubeType_s){glm::vec3(0.0f)},
+	(cubeType_s){glm::vec3(0.9f, 0.9f, 0.9f),},
 	// DEFAULT
 	(cubeType_s){
 		glm::vec3(1.0f, 1.0f, 1.0f),
@@ -77,18 +77,18 @@ void SliceCollection::addSlice(slice_s s)
 		for(int j = 0; j < LEVEL_WIDTH; j++)
 		{
 			glm::vec3 p = glm::vec3(j * 1.0f, (LEVEL_WIDTH - 1 - i) * 1.0f, (base_depth + depth) * 1.0f);
-			unsigned char v = getCubeFullId(s.data[i][j]);
+			unsigned char v1 = getCubeFullId(s.data[i][j]);
 
-			if(v)
+			if(v1)
 			{
-				cubes.addCube(p, cubeTypes[v].color * getTiling(p));
+				cubes.addCube(p, cubeTypes[v1].color * getTiling(p));
 			}
 
-			v = getCubeWireframeId(s.data[i][j]);
+			unsigned char v2 = getCubeWireframeId(s.data[i][j]);
 
-			if(v)
+			if(v2 || v1)
 			{
-				cubes_wireframe.addCube(p, cubeTypes[v].color);
+				cubes_wireframe.addCube(p, cubeTypes[v2].color);
 			}
 		}
 	}
@@ -299,6 +299,7 @@ void SliceCollection::setOrientation(int orientation)
 
 Layer::Layer():
 	state(LAYER_IDLE),
+	queued_rotation(false),
 	angle(0.0f),
 	orientation(0.0f)
 {
@@ -312,7 +313,8 @@ bool Layer::isCube(glm::vec3 p)
 
 void Layer::rotate()
 {
-	state = LAYER_ROTATING;
+	if(state == LAYER_ROTATING) queued_rotation = true;
+	else state = LAYER_ROTATING;
 }
 
 bool Layer::update(float delta)
@@ -322,6 +324,12 @@ bool Layer::update(float delta)
 	switch(state)
 	{
 		case LAYER_IDLE:
+			if(queued_rotation)
+			{
+				queued_rotation = false;
+				rotate();
+				ret = true;
+			}
 			break;
 		case LAYER_ROTATING:
 			{

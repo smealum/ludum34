@@ -38,6 +38,7 @@ typedef enum
 {
 	LAYER_IDLE,
 	LAYER_ROTATING,
+	LAYER_ROTATING_TWICE,
 }layerState_t;
 
 typedef struct
@@ -98,6 +99,7 @@ class Layer
 	private:
 		SliceCollection slices;
 		layerState_t state;
+		bool queued_rotation;
 		float angle;
 		int orientation;
 };

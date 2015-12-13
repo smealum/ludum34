@@ -128,7 +128,7 @@ void Cubes::draw(Camera& camera, Lighting& lighting)
 	if(wireframe)
 	{
 		wireframe_lighting.update(shader);
-		glDepthFunc(GL_LEQUAL);
+		glDepthFunc(GL_LESS);
 	}else{
 		lighting.update(shader);
 	}
@@ -139,6 +139,7 @@ void Cubes::draw(Camera& camera, Lighting& lighting)
 	// printf("%f %f %f\n", data[0].position.x, data[0].position.y, data[0].position.z);
 
 	glDrawArrays(GL_POINTS, 0, current_n);
+
 
 	if(wireframe)
 	{
