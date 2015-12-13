@@ -4,7 +4,7 @@
 #include "input.h"
 
 Player::Player():
-	position(0.0f, 1.0f, 0.0f),
+	position(0.0f, 0.0f, 0.0f),
 	direction(1.0f, 0.0f, 0.0f),
 	progress(0.0f),
 	state(PLAYER_NEWLYIDLE),

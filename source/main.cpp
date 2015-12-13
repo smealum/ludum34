@@ -19,7 +19,7 @@
 #include "path.h"
 #include "audio.h"
 
-Settings settings(800 * 2, 600 * 2, 4.0f * 2);
+Settings settings(800 * 2, 600 * 2, 3.0f * 2);
 
 int main(void)
 {
@@ -35,7 +35,6 @@ int main(void)
 
 	Lighting lighting;
 
-	// lighting.setLightPosition(0, glm::vec3(-0.148422, 0.529210, -0.835409));
 	lighting.setLightPosition(0, glm::vec3(0.575778, 0.324158, -0.750601));
 	lighting.setLightEnabled(0, true);
 	lighting.setLightDirectional(0, true);
@@ -56,8 +55,8 @@ int main(void)
 	Player player;
 	Text text("hello", glm::vec2(0.0, 0.0));
 
-	LevelGeneratorStatic levelGenerator;
-	Level level(levelGenerator);
+	LevelGeneratorRandom levelGenerator_random(32);
+	Level level(levelGenerator_random);
 	Cubes lightcube(1);
 
 	double lastFrame = glfwGetTime();

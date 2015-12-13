@@ -6,7 +6,6 @@
 #include "slices.h"
 #include "level_generator.h"
 
-#define LEVEL_NUMLAYERS (3)
 #define LEVEL_NUMSLICES (32)
 #define SC_NUMCUBES (1024)
 
@@ -31,9 +30,8 @@ typedef enum
 	CUBEPROPERTY_DIRECTION_BACKWARD = 1,
 	CUBEPROPERTY_DIRECTION_LEFT = 2,
 	CUBEPROPERTY_DIRECTION_RIGHT = 3,
+	CUBEPROPERTY_DIRECTION_ANY = 4,
 }cubePropertyDirection_t;
-
-typedef unsigned int cubeProperties_t;
 
 typedef enum
 {
