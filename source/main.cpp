@@ -1,24 +1,15 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <iostream>
+
 #include "gl.h"
 #include "window.h"
 #include "settings.h"
 #include "dbg.h"
 
-#include "shader.h"
-#include "camera.h"
-#include "_math.h"
-#include "lighting.h"
-#include "cubes.h"
-#include "text.h"
-#include "player.h"
-#include "obj.h"
-#include "input.h"
-#include "level.h"
-#include "path.h"
-#include "hud.h"
+#include "game.h"
 #include "audio.h"
+#include "text.h"
 
 Settings settings(800 * 2, 600 * 2, 3.0f * 2);
 
@@ -28,21 +19,7 @@ int main(void)
 	glewInit();
 	audioInit();
 	textInit();
-
-	Camera camera(0.001f, 100.0f);
-
-	camera.setPosition(glm::vec3(-5.0f, 10.0f, -10.0f));
-	// camera.view3 = glm::mat3(glm::rotate(glm::mat4(1.0f), float(M_PI / 4), glm::vec3(1.0f, 0.0f, 0.0f))) * glm::mat3(glm::rotate(glm::mat4(1.0f), float(3 * M_PI / 4), glm::vec3(0.0f, 1.0f, 0.0f)));
-	camera.view3 = glm::mat3(glm::rotate(glm::mat4(1.0f), float(M_PI / 4) * 0.95f, glm::vec3(1.0f, 0.0f, 0.0f))) * glm::mat3(glm::rotate(glm::mat4(1.0f), float(3 * M_PI / 4) * 1.05f, glm::vec3(0.0f, 1.0f, 0.0f)));
-
-	Lighting lighting;
-
-	lighting.setLightPosition(0, glm::vec3(0.575778, 0.324158, -0.750601));
-	lighting.setLightEnabled(0, true);
-	lighting.setLightDirectional(0, true);
-	lighting.setLightFresnel(0, 0.0f);
-	lighting.setLightShininess(0, 3.0f);
-
+	
 	glLineWidth(settings.line_width);
 
 	glViewport(0, 0, settings.width, settings.height);
@@ -54,85 +31,21 @@ int main(void)
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
 
-	Player player;
-	Hud hud;
-
+	Game game;
 	LevelGeneratorRandom levelGenerator_random(32);
-	Level level(levelGenerator_random);
-	Cubes lightcube(1);
+
+	game.loadLevel(levelGenerator_random);
 
 	double lastFrame = glfwGetTime();
 
-	// Sound sound("drumloop.wav");
-
-	// sound.play();
-
-	// glClearColor(0.60f, 0.60f, 0.60f, 1.0f);
-	// glClearColor(9.0f / 255.0f, 29.0f / 255.0f, 54.0f / 255.0f, 1.0f);
-	glClearColor(19.0f / 255.0f, 31.0f / 255.0f, 46.0f / 255.0f, 1.0f);
-
-	int layer = 0;
-
 	while(windowUpdate())
 	{
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 		double currentFrame = glfwGetTime();
 		double deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 
-		if(Input::isKeyHold(GLFW_KEY_Y)) lighting.setLightPosition(0, lighting.getLightPosition(0) + glm::vec3(2.0, 0.0, 0.0) * float(deltaTime));
-		if(Input::isKeyHold(GLFW_KEY_H)) lighting.setLightPosition(0, lighting.getLightPosition(0) - glm::vec3(2.0, 0.0, 0.0) * float(deltaTime));
-		if(Input::isKeyHold(GLFW_KEY_U)) lighting.setLightPosition(0, lighting.getLightPosition(0) + glm::vec3(0.0, 2.0, 0.0) * float(deltaTime));
-		if(Input::isKeyHold(GLFW_KEY_J)) lighting.setLightPosition(0, lighting.getLightPosition(0) - glm::vec3(0.0, 2.0, 0.0) * float(deltaTime));
-		if(Input::isKeyHold(GLFW_KEY_I)) lighting.setLightPosition(0, lighting.getLightPosition(0) + glm::vec3(0.0, 0.0, 2.0) * float(deltaTime));
-		if(Input::isKeyHold(GLFW_KEY_K)) lighting.setLightPosition(0, lighting.getLightPosition(0) - glm::vec3(0.0, 0.0, 2.0) * float(deltaTime));
-
-		if(Input::isKeyPressed(GLFW_KEY_T))
-		{
-			bool canRotate = player.canRotateLayer(level, layer);
-
-			for(int i = 0; !canRotate && i < LEVEL_NUMLAYERS; i++)
-			{
-				if(i != layer && !player.canRotateLayer(level, i))
-				{
-					canRotate = true;
-				}
-			}
-
-			if(canRotate) level.rotateLayer(layer);
-		}
-
-		if(Input::isKeyPressed(GLFW_KEY_R))
-		{
-			layer++;
-			layer %= LEVEL_NUMLAYERS;
-			hud.updateSelectedLayer(layer);
-		}
-
-		lighting.setLightPosition(0, glm::normalize(lighting.getLightPosition(0)));
-
-		// std::cout << glm::to_string(lighting.getLightPosition(0)) << std::endl;
-		
-		{
-			level.update(deltaTime);
-			player.update(level, deltaTime);
-			player.updateCamera(camera);
-		}
-
-		{
-			lightcube.model = glm::translate(glm::mat4(1.0f), lighting.getLightPosition(0)) * glm::mat4(glm::mat3(0.1f));
-			lightcube.draw(camera, lighting);
-
-			level.draw(camera, lighting, false);
-
-			player.draw(camera, lighting, true);
-			player.draw(camera, lighting);
-			
-			level.draw(camera, lighting, true);
-
-			hud.draw();
-		}
+		game.update(deltaTime);
+		game.draw();
 	}
 
 	textExit();
