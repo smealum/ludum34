@@ -10,6 +10,7 @@ in VertexAttrib
   vec2 texcoord;
   vec4 color;
   float fall_time;
+  int layer;
 } vin[];
 
 out VertexAttrib
@@ -18,6 +19,7 @@ out VertexAttrib
   vec3 normal;
   vec3 position;
   vec4 color;
+  flat int layer;
 } vout;
 
 #define outputVertex(v) tmp = v; \
@@ -37,6 +39,7 @@ void main()
 	vec3 tmp;
 
     vout.color = vin[0].color;
+    vout.layer = vin[0].layer;
 
     vout.normal = vec3(0.0, 1.0, 0.0);
     outputVertex(pos - x - y - z);

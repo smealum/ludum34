@@ -7,7 +7,7 @@
 #include "slices.h"
 #include "glm.h"
 
-#define NUM_MARKOVSTEPS (9)
+#define NUM_MARKOVSTEPS (15)
 
 class LevelGenerator
 {

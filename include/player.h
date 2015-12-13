@@ -41,6 +41,7 @@ class Player
 		void startOutro();
 		
 		glm::vec3 getPosition();
+		bool isGameover();
 
 		void reset();
 		

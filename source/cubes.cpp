@@ -20,6 +20,7 @@ Cubes::Cubes(int n, int _current_n, bool wireframe):
 		data[i].position = glm::vec3(0.0);
 		data[i].color = glm::vec3(1.0);
 		data[i].fall_time = 0.0;
+		data[i].layer = 0;
 	}
 
 	glGenVertexArrays(1, &vao);
@@ -32,9 +33,10 @@ Cubes::Cubes(int n, int _current_n, bool wireframe):
 	shader.setBuffers(vao, vbo, -1);
 	shader.use();
 	glBindFragDataLocation(shader.getHandle(), 0, "out_color");
-	shader.setAttribute("position", 3, GL_FALSE, 7, 0);
-	shader.setAttribute("color", 3, GL_FALSE, 7, 3);
-	shader.setAttribute("fall_time", 1, GL_FALSE, 7, 6);
+	shader.setAttribute("position", 3, GL_FALSE, 8, 0);
+	shader.setAttribute("color", 3, GL_FALSE, 8, 3);
+	shader.setAttribute("fall_time", 1, GL_FALSE, 8, 6);
+	shader.setAttribute("layer", 1, GL_FALSE, 8, 7);
 
 	// setup wireframe lighting
 	wireframe_lighting.setObjectColor(true);
@@ -54,7 +56,7 @@ void Cubes::clear()
 	current_n = 0;
 }
 
-int Cubes::addCube(glm::vec3 p, glm::vec3 c, bool update)
+int Cubes::addCube(glm::vec3 p, glm::vec3 c, int layer, bool update)
 {
 	if(current_n >= n) return -1;
 
@@ -68,6 +70,7 @@ int Cubes::addCube(glm::vec3 p, glm::vec3 c, bool update)
 	setPosition(id, p);
 	setColor(id, c);
 	data[id].fall_time = 0.0;
+	data[id].layer = layer;
 
 	if(update) this->update();
 
@@ -183,7 +186,7 @@ void Cubes::setFloatiness(float floatiness)
 	this->floatiness = floatiness;
 }
 
-void Cubes::draw(Camera& camera, Lighting& lighting)
+void Cubes::draw(Camera& camera, Lighting& lighting, int selected_layer)
 {
 	shader.use();
 
@@ -203,6 +206,7 @@ void Cubes::draw(Camera& camera, Lighting& lighting)
 	shader.setUniform("floatiness", floatiness);
 	shader.setUniform("model", model);
 	shader.setUniform("bTexture", false);
+	shader.setUniform("selected_layer", selected_layer);
 
 	// printf("%f %f %f\n", data[0].position.x, data[0].position.y, data[0].position.z);
 

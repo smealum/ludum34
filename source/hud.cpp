@@ -14,14 +14,14 @@ const char* layer_names[] = {
 
 void Hud::updateSelectedLayer(int layer)
 {
-	if(layer < 0 || layer >= 3) return;
+	// if(layer < 0 || layer >= 3) return;
 
-	static char buffer[32];
-	sprintf(buffer, "selected layer : %s", layer_names[layer]);
-	selectionText.update(buffer);
+	// static char buffer[32];
+	// sprintf(buffer, "selected layer : %s", layer_names[layer]);
+	// selectionText.update(buffer);
 }
 
 void Hud::draw()
 {
-	selectionText.draw();
+	// selectionText.draw();
 }

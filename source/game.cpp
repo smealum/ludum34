@@ -28,6 +28,19 @@ Game::Game():
 	glClearColor(19.0f / 255.0f, 31.0f / 255.0f, 46.0f / 255.0f, 1.0f);
 }
 
+void Game::startIntro()
+{
+	resetLevel();
+}
+
+void Game::startOutro()
+{
+	state = GAME_OUTRO;
+	player.startOutro();
+	level->startOutro();
+	timeStart = glfwGetTime();
+}
+
 void Game::update(float delta)
 {
 	if(!level) return;
@@ -60,18 +73,22 @@ void Game::update(float delta)
 		case GAME_PLAYING:
 			if(level->isEndPosition(player.getPosition()))
 			{
-				state = GAME_OUTRO;
-				player.startOutro();
-				level->startOutro();
+				startOutro();
+			}
+
+			if(player.isGameover())
+			{
+				startOutro();
+			}
+			break;
+		case GAME_OUTRO:
+			if(glfwGetTime() - timeStart > 5.0)
+			{
+				startIntro();
 			}
 			break;
 		default:
 			break;
-	}
-
-	if(Input::isKeyPressed(GLFW_KEY_Y))
-	{
-		level->startOutro();
 	}
 
 	if(Input::isKeyPressed(GLFW_KEY_R))
@@ -101,12 +118,12 @@ void Game::draw()
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	level->draw(camera, lighting, false);
+	level->draw(camera, lighting, false, layer + 1);
 
 	player.draw(camera, lighting, true);
 	player.draw(camera, lighting);
 	
-	level->draw(camera, lighting, true);
+	level->draw(camera, lighting, true, layer + 1);
 
 	hud.draw();
 }

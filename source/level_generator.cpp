@@ -317,6 +317,214 @@ class PathStepTypeBelowForward : public PathStepType
 		}
 };
 
+
+bool getStepMultipleHeight(glm::ivec3 position, glm::ivec3& out, ConstraintManager& constraints, glm::ivec3 direction, int max_height, cubePropertyDirection_t propDirection)
+{
+	bool ret;
+	if(max_height > 2) max_height = 2;
+	int height = rand() % (max_height) + 1;
+
+	out = position + glm::ivec3(0, height, 0) + direction;
+
+	ret = constraints.instanceConstraint((pathConstraint_s){position + glm::ivec3(0, -1, 0), CUBEPROPERTY_DIRECTION((cubeProperties_t)propDirection), false});
+	if(ret) {constraints.clearInstancedConstraints(); return false;}
+	ret = constraints.instanceConstraint((pathConstraint_s){position + glm::ivec3(0, 0, 0), 0, true});
+	if(ret) {constraints.clearInstancedConstraints(); return false;}
+
+	for(int i = 0; i < height; i++)
+	{
+		ret = constraints.instanceConstraint((pathConstraint_s){position + glm::ivec3(0, 1 + i, 0), 0, true});
+		if(ret) {constraints.clearInstancedConstraints(); return false;}
+		cubeProperties_t value = (i == height - 1) ? CUBEPROPERTY_DIRECTION_FORWARD : CUBEPROPERTY_DIRECTION_ANY;
+		ret = constraints.instanceConstraint((pathConstraint_s){position + direction + glm::ivec3(0, i, 0), CUBEPROPERTY_DIRECTION(value) | CUBEPROPERTY_CLIMBABLE(1), false});
+		if(ret) {constraints.clearInstancedConstraints(); return false;}
+	}
+
+	ret = constraints.instanceConstraint((pathConstraint_s){position + direction + glm::ivec3(0, height, 0), 0, true});
+	if(ret) {constraints.clearInstancedConstraints(); return false;}
+
+	return true;
+}
+
+class PathStepTypeMultipleAboveLeft : public PathStepType
+{
+	public:
+		virtual bool getStep(glm::ivec3 position, glm::ivec3& out, ConstraintManager& constraints)
+		{
+			bool ret;
+			if(position.x >= LEVEL_WIDTH - 1) return false;
+			if(position.y >= LEVEL_WIDTH - 1) return false;
+
+			int max_height = (LEVEL_WIDTH - 1) - position.y;
+
+			ret = getStepMultipleHeight(position, out, constraints, glm::ivec3(1, 0, 0), max_height, CUBEPROPERTY_DIRECTION_LEFT);
+			if(!ret) return false;
+
+			constraints.flushInstancedConstraints();
+
+			return true;
+		}
+
+		virtual const char* getName()
+		{
+			static const char* name = "MultipleAboveLeft";
+			return name;
+		}
+};
+
+class PathStepTypeMultipleAboveRight : public PathStepType
+{
+	public:
+		virtual bool getStep(glm::ivec3 position, glm::ivec3& out, ConstraintManager& constraints)
+		{
+			bool ret;
+			if(position.x <= 0) return false;
+			if(position.y >= LEVEL_WIDTH - 1) return false;
+
+			int max_height = (LEVEL_WIDTH - 1) - position.y;
+
+			ret = getStepMultipleHeight(position, out, constraints, glm::ivec3(-1, 0, 0), max_height, CUBEPROPERTY_DIRECTION_RIGHT);
+			if(!ret) return false;
+
+			constraints.flushInstancedConstraints();
+
+			return true;
+		}
+
+		virtual const char* getName()
+		{
+			static const char* name = "MultipleAboveRight";
+			return name;
+		}
+};
+
+class PathStepTypeMultipleAboveForward : public PathStepType
+{
+	public:
+		virtual bool getStep(glm::ivec3 position, glm::ivec3& out, ConstraintManager& constraints)
+		{
+			bool ret;
+			if(position.y >= LEVEL_WIDTH - 1) return false;
+			int max_height = (LEVEL_WIDTH - 1) - position.y;
+
+			ret = getStepMultipleHeight(position, out, constraints, glm::ivec3(0, 0, 1), max_height, CUBEPROPERTY_DIRECTION_FORWARD);
+			if(!ret) return false;
+
+			constraints.flushInstancedConstraints();
+
+			return true;
+		}
+
+		virtual const char* getName()
+		{
+			static const char* name = "MultipleAboveForward";
+			return name;
+		}
+};
+
+bool getStepMultipleHeightBelow(glm::ivec3 position, glm::ivec3& out, ConstraintManager& constraints, glm::ivec3 direction, int max_height, cubePropertyDirection_t propDirection)
+{
+	bool ret;
+	if(max_height > 2) max_height = 2;
+	int height = rand() % (max_height) + 1;
+
+	out = position + glm::ivec3(0, -height, 0) + direction;
+
+	ret = constraints.instanceConstraint((pathConstraint_s){position + glm::ivec3(0, -1, 0), CUBEPROPERTY_DIRECTION((cubeProperties_t)propDirection), false});
+	if(ret) {constraints.clearInstancedConstraints(); return false;}
+	ret = constraints.instanceConstraint((pathConstraint_s){position + glm::ivec3(0, 0, 0), 0, true});
+	if(ret) {constraints.clearInstancedConstraints(); return false;}
+
+	for(int i = 0; i <= height; i++)
+	{
+		ret = constraints.instanceConstraint((pathConstraint_s){position + glm::ivec3(0, -i, 0), 0, true});
+		if(ret) {constraints.clearInstancedConstraints(); return false;}
+	}
+
+	ret = constraints.instanceConstraint((pathConstraint_s){position + direction + glm::ivec3(0, - height - 1, 0), CUBEPROPERTY_DIRECTION(CUBEPROPERTY_DIRECTION_ANY), false});
+	if(ret) {constraints.clearInstancedConstraints(); return false;}
+
+
+	return true;
+}
+
+class PathStepTypeMultipleBelowLeft : public PathStepType
+{
+	public:
+		virtual bool getStep(glm::ivec3 position, glm::ivec3& out, ConstraintManager& constraints)
+		{
+			bool ret;
+			if(position.x >= LEVEL_WIDTH - 1) return false;
+			if(position.y <= 2) return false;
+
+			int max_height = position.y - 2;
+
+			ret = getStepMultipleHeightBelow(position, out, constraints, glm::ivec3(1, 0, 0), max_height, CUBEPROPERTY_DIRECTION_LEFT);
+			if(!ret) {constraints.clearInstancedConstraints(); return false;}
+
+			constraints.flushInstancedConstraints();
+
+			return true;
+		}
+
+		virtual const char* getName()
+		{
+			static const char* name = "MultipleBelowLeft";
+			return name;
+		}
+};
+
+class PathStepTypeMultipleBelowRight : public PathStepType
+{
+	public:
+		virtual bool getStep(glm::ivec3 position, glm::ivec3& out, ConstraintManager& constraints)
+		{
+			bool ret;
+			if(position.x <= 0) return false;
+			if(position.y <= 2) return false;
+
+			int max_height = position.y - 2;
+
+			ret = getStepMultipleHeightBelow(position, out, constraints, glm::ivec3(-1, 0, 0), max_height, CUBEPROPERTY_DIRECTION_RIGHT);
+			if(!ret) {constraints.clearInstancedConstraints(); return false;}
+
+			constraints.flushInstancedConstraints();
+
+			return true;
+		}
+
+		virtual const char* getName()
+		{
+			static const char* name = "MultipleBelowRight";
+			return name;
+		}
+};
+
+class PathStepTypeMultipleBelowForward : public PathStepType
+{
+	public:
+		virtual bool getStep(glm::ivec3 position, glm::ivec3& out, ConstraintManager& constraints)
+		{
+			bool ret;
+			if(position.y <= 2) return false;
+
+			int max_height = position.y - 2;
+
+			ret = getStepMultipleHeightBelow(position, out, constraints, glm::ivec3(0, 0, 1), max_height, CUBEPROPERTY_DIRECTION_FORWARD);
+			if(!ret) {constraints.clearInstancedConstraints(); return false;}
+
+			constraints.flushInstancedConstraints();
+
+			return true;
+		}
+
+		virtual const char* getName()
+		{
+			static const char* name = "MultipleBelowForward";
+			return name;
+		}
+};
+
 static pathStepRandom_s markov_steps[] =
 {
 	(pathStepRandom_s) {1.0f, new PathStepTypeForward()},
@@ -328,6 +536,12 @@ static pathStepRandom_s markov_steps[] =
 	(pathStepRandom_s) {1.0f, new PathStepTypeBelowLeft()},
 	(pathStepRandom_s) {1.0f, new PathStepTypeBelowRight()},
 	(pathStepRandom_s) {1.0f, new PathStepTypeBelowForward()},
+	(pathStepRandom_s) {0.1f, new PathStepTypeMultipleAboveLeft()},
+	(pathStepRandom_s) {0.1f, new PathStepTypeMultipleAboveRight()},
+	(pathStepRandom_s) {0.1f, new PathStepTypeMultipleAboveForward()},
+	(pathStepRandom_s) {0.1f, new PathStepTypeMultipleBelowLeft()},
+	(pathStepRandom_s) {0.1f, new PathStepTypeMultipleBelowRight()},
+	(pathStepRandom_s) {0.1f, new PathStepTypeMultipleBelowForward()},
 };
 
 static const int markov_length = sizeof(markov_steps) / sizeof(pathStepRandom_s);
@@ -350,7 +564,13 @@ difficultyLevel_s difficultyLevels[] =
 			0.0f, // AboveForward
 			0.0f, // BelowLeft
 			0.0f, // BelowRight
-			0.0f  // BelowForward
+			0.0f,  // BelowForward
+			0.0f, // MultipleAboveLeft
+			0.0f, // MultipleAboveRight
+			0.0f, // MultipleAboveForward
+			0.0f, // MultipleBelowLeft
+			0.0f, // MultipleBelowRight
+			0.0f  // MultipleBelowForward
 		}, 
 	},
 	// RANDOM_DIFFICULTY_VERY_EASY
@@ -368,7 +588,13 @@ difficultyLevel_s difficultyLevels[] =
 			0.0f, // AboveForward
 			0.0f, // BelowLeft
 			0.0f, // BelowRight
-			0.0f  // BelowForward
+			0.0f,  // BelowForward
+			0.0f, // MultipleAboveLeft
+			0.0f, // MultipleAboveRight
+			0.0f, // MultipleAboveForward
+			0.0f, // MultipleBelowLeft
+			0.0f, // MultipleBelowRight
+			0.0f  // MultipleBelowForward
 		}, 
 	},
 	// RANDOM_DIFFICULTY_EASY
@@ -386,7 +612,13 @@ difficultyLevel_s difficultyLevels[] =
 			0.0f, // AboveForward
 			0.0f, // BelowLeft
 			0.0f, // BelowRight
-			0.0f  // BelowForward
+			0.0f,  // BelowForward
+			0.0f, // MultipleAboveLeft
+			0.0f, // MultipleAboveRight
+			0.0f, // MultipleAboveForward
+			0.0f, // MultipleBelowLeft
+			0.0f, // MultipleBelowRight
+			0.0f  // MultipleBelowForward
 		}, 
 	},
 	// RANDOM_DIFFICULTY_MEDIUM
@@ -404,7 +636,13 @@ difficultyLevel_s difficultyLevels[] =
 			0.0f, // AboveForward
 			1.0f, // BelowLeft
 			1.0f, // BelowRight
-			1.0f  // BelowForward
+			1.0f,  // BelowForward
+			0.0f, // MultipleAboveLeft
+			0.0f, // MultipleAboveRight
+			0.0f, // MultipleAboveForward
+			0.0f, // MultipleBelowLeft
+			0.0f, // MultipleBelowRight
+			0.0f  // MultipleBelowForward
 		}, 
 	},
 	// RANDOM_DIFFICULTY_HARD
@@ -422,7 +660,13 @@ difficultyLevel_s difficultyLevels[] =
 			1.0f, // AboveForward
 			1.0f, // BelowLeft
 			1.0f, // BelowRight
-			1.0f  // BelowForward
+			1.0f,  // BelowForward
+			0.1f, // MultipleAboveLeft
+			0.1f, // MultipleAboveRight
+			0.1f, // MultipleAboveForward
+			0.1f, // MultipleBelowLeft
+			0.1f, // MultipleBelowRight
+			0.1f  // MultipleBelowForward
 		},
 	},
 };

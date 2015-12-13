@@ -7,11 +7,14 @@ uniform mat4 model, view, proj;
 uniform float t;
 uniform float floatiness;
 
+uniform int selected_layer;
+
 in VertexAttrib
 {
   vec2 texcoord;
   vec4 color;
   float fall_time;
+  int layer;
 } vin[];
 
 out VertexAttrib
@@ -20,6 +23,7 @@ out VertexAttrib
   vec3 normal;
   vec3 position;
   vec4 color;
+  flat int layer;
 } vout;
 
 #define outputVertex(v) tmp = v; \
@@ -54,6 +58,13 @@ void main() {
     vec3 tmp;
 
     vout.color = vin[0].color;
+
+    if(selected_layer == vin[0].layer || (selected_layer >= 2 && vin[0].layer == 4))
+    {
+        vout.color = vec4(vec3(vout.color) * 1.1, 1.0);
+    }
+
+    vout.layer = vin[0].layer;
 
     {
         vout.normal = vec3(0.0, 0.0, -1.0);

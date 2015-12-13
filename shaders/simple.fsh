@@ -8,6 +8,7 @@ in VertexAttrib
   vec3 normal;
   vec3 position;
   vec4 color;
+  flat int layer;
 } vin;
 
 uniform mat4 model, view, proj;
@@ -20,6 +21,7 @@ uniform float lights_ambient[NUM_LIGHTS], lights_diffuse[NUM_LIGHTS], lights_spe
 uniform float lights_fresnelBias[NUM_LIGHTS], lights_fresnelScale[NUM_LIGHTS], lights_fresnelPower[NUM_LIGHTS];
 uniform bool lights_enabled[NUM_LIGHTS];
 uniform bool lights_directional[NUM_LIGHTS];
+uniform int selected_layer;
 
 uniform bool light_objectcolor;
 
@@ -75,7 +77,10 @@ void main()
 		// Ilight += Ifresnel;
 	}
 
-	float pulse = 1.0 + sin(t * 2.0 + vin.position.z) * 0.1;
+	// float pulse = 1.0 + sin(t * 2.0 + vin.position.z) * 0.1;
+	float pulse = 1.0 + (sin(t * 6.0) + 1.5) * 0.1;
+
+	if(selected_layer != vin.layer && !(selected_layer >= 2 && vin.layer == 4)) pulse = 1.0;
 
 	if(bTexture) out_color = texture2D( texture, vec2(vin.texcoord.x, 1.0 - vin.texcoord.y) ).zyxw * vec4(Ilight, 1.0);
 	else if(light_objectcolor) out_color = clamp(vin.color * vec4(pulse, pulse, pulse, 1.0) * vec4(Ilight, 1.0), 0.0, 1.0);

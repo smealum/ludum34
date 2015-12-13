@@ -277,6 +277,11 @@ bool Player::canRotateLayer(Level& level, int layer)
 	return !level.isCubeLayer(layer, position + glm::vec3(0.0f, -1.0f, 0.0f));
 }
 
+bool Player::isGameover()
+{
+	return position.y <= - LEVEL_WIDTH / 2;
+}
+
 void Player::draw(Camera& camera, Lighting& lighting, bool shadow)
 {
 	if(shadow)

@@ -65,7 +65,7 @@ class SliceCollection
 		void addSlice(slice_s s);
 		void popSlice();
 
-		void draw(Camera& camera, Lighting& lighting, bool wireframe = false);
+		void draw(Camera& camera, Lighting& lighting, bool wireframe = false, int selected_layer = -1);
 
 		void setAngle(float angle);
 		void setOrientation(int orientation);
@@ -96,7 +96,7 @@ class Layer
 	public:
 		Layer();
 
-		void draw(Camera& camera, Lighting& lighting, bool wireframe = false);
+		void draw(Camera& camera, Lighting& lighting, bool wireframe = false, int selected_layer = -1);
 		bool update(float delta);
 
 		void rotate();
@@ -122,7 +122,7 @@ class Level
 	public:
 		Level(LevelGenerator& lg);
 		
-		void draw(Camera& camera, Lighting& lighting, bool wireframe = false);
+		void draw(Camera& camera, Lighting& lighting, bool wireframe = false, int selected_layer = -1);
 
 		void rotateLayer(int l);
 

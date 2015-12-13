@@ -26,6 +26,9 @@ class Game
 		void loadLevel(LevelGenerator& lg);
 		void resetLevel();
 
+		void startIntro();
+		void startOutro();
+
 	private:
 		Camera camera;
 		Lighting lighting;

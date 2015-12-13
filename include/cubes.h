@@ -11,6 +11,7 @@ typedef struct
 	glm::vec3 position;
 	glm::vec3 color;
 	float fall_time;
+	int layer;
 }cube_s;
 
 class Cubes
@@ -19,7 +20,7 @@ class Cubes
 		Cubes(int n, int current_n = -1, bool wireframe = false);
 		~Cubes();
 
-		void draw(Camera& camera, Lighting& lighting);
+		void draw(Camera& camera, Lighting& lighting, int selected_layer = -1);
 		void update();
 
 		void setPosition(int i, glm::vec3 p, bool update = false);
@@ -32,7 +33,7 @@ class Cubes
 
 		void clear();
 
-		int addCube(glm::vec3 p, glm::vec3 c, bool update = false);
+		int addCube(glm::vec3 p, glm::vec3 c, int layer, bool update = false);
 		void removeCube(int id, bool update = false);
 		void removeCube(glm::vec3 p, bool update = false);
 		void removeDepth(float depth, bool = false);
