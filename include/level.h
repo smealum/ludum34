@@ -38,7 +38,6 @@ typedef enum
 {
 	LAYER_IDLE,
 	LAYER_ROTATING,
-	LAYER_ROTATING_TWICE,
 }layerState_t;
 
 typedef struct
@@ -51,6 +50,7 @@ extern cubeType_s cubeTypes[16];
 
 class SliceCollection
 {
+	friend class Level;
 	public:
 		SliceCollection();
 
@@ -72,6 +72,7 @@ class SliceCollection
 
 		unsigned char getCubeInfo(glm::ivec3 p, bool* out_of_bounds = NULL);
 		cubeProperties_t getCubeProperties(glm::ivec3 p);
+		void removeCube(glm::ivec3 p);
 
 	private:
 		std::deque<slice_s> data;
@@ -95,6 +96,7 @@ class Layer
 		void popSlice();
 
 		bool isCube(glm::vec3 p);
+		void removeCube(glm::ivec3 p);
 
 	private:
 		SliceCollection slices;
@@ -127,7 +129,10 @@ class Level
 
 		bool getNextLocation(glm::vec3 p, glm::vec3& out);
 
+		void killCube(glm::vec3 p);
+
 	private:
+		Cubes deadcubes, deadcubes_wireframe;
 		LevelGenerator& generator;
 		SliceCollection slices;
 		Layer layers[LEVEL_NUMLAYERS];

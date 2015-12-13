@@ -9,6 +9,7 @@ in VertexAttrib
 {
   vec2 texcoord;
   vec4 color;
+  float fall_time;
 } vin[];
 
 out VertexAttrib

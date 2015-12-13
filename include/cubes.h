@@ -10,6 +10,7 @@ typedef struct
 {
 	glm::vec3 position;
 	glm::vec3 color;
+	float fall_time;
 }cube_s;
 
 class Cubes
@@ -23,11 +24,14 @@ class Cubes
 
 		void setPosition(int i, glm::vec3 p, bool update = false);
 		void setColor(int i, glm::vec3 c, bool update = false);
+		void setFalling(int i, bool update = false);
+		void setFloatiness(float floatiness);
 
 		void clear();
 
 		int addCube(glm::vec3 p, glm::vec3 c, bool update = false);
 		void removeCube(int id, bool update = false);
+		void removeCube(glm::vec3 p, bool update = false);
 		void removeDepth(float depth);
 
 		glm::mat4 model;
@@ -37,6 +41,7 @@ class Cubes
 		cube_s* data;
 		ShaderProgram& shader;
 		GLuint vao, vbo;
+		float floatiness;
 		bool wireframe;
 };
 

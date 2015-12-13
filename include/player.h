@@ -37,7 +37,7 @@ class Player
 		glm::vec3 getPosition();
 		
 	private:
-		glm::vec3 position;
+		glm::vec3 position, last_position;
 		glm::vec3 direction;
 		glm::vec3 rotation_axis, rotation_center;
 		bool rotation;

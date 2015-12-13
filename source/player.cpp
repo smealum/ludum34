@@ -6,16 +6,18 @@
 Player::Player():
 	position(0.0f, 0.0f, 0.0f),
 	direction(1.0f, 0.0f, 0.0f),
+	rotation(false),
 	progress(0.0f),
 	target_progress(1.0f),
 	state(PLAYER_NEWLYIDLE),
-	rotation(false),
 	cube(1),
 	cube_outline(1, 1, true),
 	path(PLAYER_PATHLENGTH),
 	type(0)
 {
 	cube.setColor(0, glm::vec3(255.0f, 174.0f, 68.0f) * (1.4f / 255), true);
+
+	last_position = position;
 
 	// setup shadow lighting
 	shadow_lighting.setObjectColor(false);
@@ -137,49 +139,62 @@ void Player::doStep(Level& level)
 
 void Player::update(Level& level, float delta)
 {
-	switch(state)
+	playerState_t old_state;
+
+	// loop is to avoid missing frames between moves
+	do
 	{
-		case PLAYER_IDLE:
-			{
-				if(!moves.empty())
+		old_state = state;
+
+		switch(state)
+		{
+			case PLAYER_IDLE:
 				{
-					startNextMove();
+					if(!moves.empty())
+					{
+						startNextMove();
+					}
 				}
-			}
-			break;
-		case PLAYER_NEWLYIDLE:
-			{
-				unsigned char cube_type = level.getCubeInfo(position);
-
-				// printf("%d\n", cube_type);
-
-				if(cube_type > 0)
+				break;
+			case PLAYER_NEWLYIDLE:
 				{
-					setType(getCubeWireframeId(cube_type));
+					unsigned char cube_type = level.getCubeInfo(position);
+
+					// printf("%d\n", cube_type);
+
+					if(cube_type > 0)
+					{
+						setType(getCubeWireframeId(cube_type));
+					}
+
+					path.generate(level, getPosition());
+
+					state = PLAYER_IDLE;
 				}
-
-				path.generate(level, getPosition());
-
-				state = PLAYER_IDLE;
-			}
-			break;
-		case PLAYER_MOVING:
-			progress += speed * delta;
-			if(progress >= target_progress)
-			{
-				progress = 0.0f;
-				position += direction;
-				position = glm::vec3(glm::ivec3(position));
-
-				state = PLAYER_NEWLYIDLE;
-
-				while(int(position.z - level.getOffset()) > 8)
+				break;
+			case PLAYER_MOVING:
+				progress += speed * delta;
+				if(progress >= target_progress)
 				{
-					level.popSlice();
+					progress = 0.0f;
+
+					level.killCube(last_position + glm::vec3(0.0f, -1.0f, 0.0f));
+
+					last_position = position;
+
+					position += direction;
+					position = glm::vec3(glm::ivec3(position));
+
+					state = PLAYER_NEWLYIDLE;
+
+					while(int(position.z - level.getOffset()) > 8)
+					{
+						level.popSlice();
+					}
 				}
-			}
-			break;
-	}
+				break;
+		}
+	}while(old_state != state && state != PLAYER_MOVING);
 
 	path.update(delta);
 

@@ -5,11 +5,13 @@ layout(triangle_strip, max_vertices = 24) out;
 
 uniform mat4 model, view, proj;
 uniform float t;
+uniform float floatiness;
 
 in VertexAttrib
 {
   vec2 texcoord;
   vec4 color;
+  float fall_time;
 } vin[];
 
 out VertexAttrib
@@ -35,7 +37,14 @@ void main() {
     vec3 z = 0.53 * viewmodel[2].xyz;
 
     vec3 pos = vec3(gl_in[0].gl_Position);
-    pos += sin(t + pos.z) * vec3(0.0, 0.1, 0.0);
+    pos += floatiness * sin(t + pos.z) * vec3(0.0, 0.1, 0.0);
+    if(vin[0].fall_time > 0.0001)
+    {
+        float f = (t - vin[0].fall_time);
+        vec3 fall_component = vec3(0.0, -1.0, 0.0) * f * f * 4.0;
+        if(fall_component.y < -30.0f) return;
+        pos += fall_component;
+    }
     vec3 tmp;
 
     vout.color = vin[0].color;

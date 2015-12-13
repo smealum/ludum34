@@ -70,6 +70,25 @@ float getTiling(glm::vec3 position)
 	return ((i + j + k) % 2) ? 1.0f : 0.97f;
 }
 
+void addCube(Cubes& _cubes, Cubes& _cubes_wireframe, glm::vec3 p, unsigned char info, bool falling = false)
+{
+	unsigned char v1 = getCubeFullId(info);
+
+	if(v1)
+	{
+		int id = _cubes.addCube(p, cubeTypes[v1].color * getTiling(p));
+		if(falling) _cubes.setFalling(id);
+	}
+
+	unsigned char v2 = getCubeWireframeId(info);
+
+	if(v2 || v1)
+	{
+		int id = _cubes_wireframe.addCube(p, cubeTypes[v2].color);
+		if(falling) _cubes_wireframe.setFalling(id);
+	}
+}
+
 void SliceCollection::addSlice(slice_s s)
 {
 	for(int i = 0; i < LEVEL_WIDTH; i++)
@@ -77,19 +96,8 @@ void SliceCollection::addSlice(slice_s s)
 		for(int j = 0; j < LEVEL_WIDTH; j++)
 		{
 			glm::vec3 p = glm::vec3(j * 1.0f, (LEVEL_WIDTH - 1 - i) * 1.0f, (base_depth + depth) * 1.0f);
-			unsigned char v1 = getCubeFullId(s.data[i][j]);
 
-			if(v1)
-			{
-				cubes.addCube(p, cubeTypes[v1].color * getTiling(p));
-			}
-
-			unsigned char v2 = getCubeWireframeId(s.data[i][j]);
-
-			if(v2 || v1)
-			{
-				cubes_wireframe.addCube(p, cubeTypes[v2].color);
-			}
+			addCube(cubes, cubes_wireframe, p, s.data[i][j]);
 		}
 	}
 
@@ -143,43 +151,37 @@ void initSlice(slice_s* s)
 	memset(s, 0, sizeof(slice_s));
 }
 
+static inline glm::ivec2 rotateVector(glm::ivec2 v, int orientation)
+{
+	orientation %= 4;
+
+	switch(orientation)
+	{
+		case 1:
+			return glm::ivec2(LEVEL_WIDTH - 1 - v.y, v.x);
+		case 2:
+			return glm::ivec2(LEVEL_WIDTH - 1 - v.x, LEVEL_WIDTH - 1 - v.y);
+		case 3:
+			return glm::ivec2(v.y, LEVEL_WIDTH - 1 - v.x);
+		default:
+			return v;
+	}
+}
+
 void rotateSlice(slice_s* dst, slice_s* src, int orientation)
 {
 	orientation %= 4;
 	if(!dst || !src) return;
 
-	switch(orientation)
+	if(orientation == 0) *dst = *src;
+
+	for(int i = 0; i < LEVEL_WIDTH; i++)
 	{
-		case 0:
-			*dst = *src;
-			break;
-		case 1:
-			for(int i = 0; i < LEVEL_WIDTH; i++)
-			{
-				for(int j = 0; j < LEVEL_WIDTH; j++)
-				{
-					dst->data[LEVEL_WIDTH - 1 - j][i] = src->data[i][j];
-				}
-			}
-			break;
-		case 2:
-			for(int i = 0; i < LEVEL_WIDTH; i++)
-			{
-				for(int j = 0; j < LEVEL_WIDTH; j++)
-				{
-					dst->data[LEVEL_WIDTH - 1 - i][LEVEL_WIDTH - 1 - j] = src->data[i][j];
-				}
-			}
-			break;
-		case 3:
-			for(int i = 0; i < LEVEL_WIDTH; i++)
-			{
-				for(int j = 0; j < LEVEL_WIDTH; j++)
-				{
-					dst->data[j][LEVEL_WIDTH - 1 - i] = src->data[i][j];
-				}
-			}
-			break;
+		for(int j = 0; j < LEVEL_WIDTH; j++)
+		{
+			glm::ivec2 r = rotateVector(glm::ivec2(i, j), orientation);
+			dst->data[r.x][r.y] = src->data[i][j];
+		}
 	}
 }
 
@@ -257,6 +259,29 @@ unsigned char SliceCollection::getCubeInfo(glm::ivec3 p, bool* out_of_bounds)
 		rotateSlice(&rotated, &data[p.z], orientation);
 
 		return rotated.data[LEVEL_WIDTH - 1 - p.y][p.x];
+	}
+}
+
+void SliceCollection::removeCube(glm::ivec3 p)
+{
+	if(p.z < 0 || p.z >= (int)data.size()) return;
+	if(p.x < 0 || p.x >= LEVEL_WIDTH) return;
+	if(p.y < 0 || p.y >= LEVEL_WIDTH) return;
+
+	if(orientation == 0)
+	{
+		data[p.z].data[LEVEL_WIDTH - 1 - p.y][p.x] = 0;
+
+		cubes.removeCube(glm::vec3(p), true);
+		cubes_wireframe.removeCube(glm::vec3(p), true);
+	}
+	else{
+		glm::ivec2 r = rotateVector(glm::ivec2(p.x, p.y), 4 - orientation);
+
+		data[p.z].data[LEVEL_WIDTH - 1 - r.y][r.x] = 0;
+
+		cubes.removeCube(glm::vec3(r.x, r.y, p.z), true);
+		cubes_wireframe.removeCube(glm::vec3(r.x, r.y, p.z), true);
 	}
 }
 
@@ -375,7 +400,14 @@ void Layer::popSlice()
 	slices.popSlice();
 }
 
+void Layer::removeCube(glm::ivec3 p)
+{
+	slices.removeCube(p);
+}
+
 Level::Level(LevelGenerator& lg):
+	deadcubes(SC_NUMCUBES, 0),
+	deadcubes_wireframe(SC_NUMCUBES, 0, true),
 	generator(lg)
 {
 
@@ -392,6 +424,15 @@ void Level::draw(Camera& camera, Lighting& lighting, bool wireframe)
 	}
 
 	slices.draw(camera, lighting, wireframe);
+
+	if(!wireframe)
+	{
+		deadcubes.model = glm::rotate(glm::mat4(1.0f), 0.0f, glm::vec3(0.0f, 0.0f, 1.0f)) * glm::translate(glm::mat4(1.0f), glm::vec3(-LEVEL_WIDTH / 2, -LEVEL_WIDTH / 2, 0.0f));
+		deadcubes.draw(camera, lighting);
+	}else{
+		deadcubes_wireframe.model = deadcubes.model;
+		deadcubes_wireframe.draw(camera, lighting);
+	}
 }
 
 void Level::update(float delta)
@@ -410,13 +451,41 @@ void Level::update(float delta)
 	// TEMP
 	if(Input::isKeyPressed(GLFW_KEY_P))
 	{
-		popSlice(false);
-		needUpdate = true;
+		// slices.cubes.setFalling(0, true);
+		// slices.cubes_wireframe.setFalling(0, true);
+		killCube(glm::vec3(0.0f, -1.0f, 0.0f));
+		killCube(glm::vec3(1.0f, 0.0f, 0.0f));
 	}
 
 	if(needUpdate)
 	{
 		updateGeometry();
+	}
+}
+
+void Level::killCube(glm::vec3 p)
+{
+	unsigned char cube_info = getCubeInfo(p);
+
+	if(cube_info != 0)
+	{
+		glm::ivec3 _p(p);
+
+		_p.x += LEVEL_WIDTH / 2;
+		_p.y += LEVEL_WIDTH / 2;
+		_p.z -= getOffset();
+
+		addCube(deadcubes, deadcubes_wireframe, _p, cube_info, true);
+		
+		deadcubes.update();
+		deadcubes_wireframe.update();
+
+		slices.removeCube(_p);
+
+		for(int i = 0; i < LEVEL_NUMLAYERS; i++)
+		{
+			layers[i].removeCube(_p);
+		}
 	}
 }
 

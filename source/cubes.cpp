@@ -7,6 +7,7 @@ Cubes::Cubes(int n, int _current_n, bool wireframe):
 	n(n),
 	data(new cube_s[n]),
 	shader(ShaderProgram::loadFromFile("shaders/cube.vsh", "shaders/simple.fsh", wireframe ? "shaders/cubes_wireframe.gsh" : "shaders/cube.gsh", wireframe ? "cube_wireframe" : "cube")),
+	floatiness(1.0f),
 	wireframe(wireframe)
 {
 	if(_current_n < 0) current_n = n;
@@ -16,6 +17,7 @@ Cubes::Cubes(int n, int _current_n, bool wireframe):
 	{
 		data[i].position = glm::vec3(0.0);
 		data[i].color = glm::vec3(1.0);
+		data[i].fall_time = 0.0;
 	}
 
 	glGenVertexArrays(1, &vao);
@@ -28,8 +30,9 @@ Cubes::Cubes(int n, int _current_n, bool wireframe):
 	shader.setBuffers(vao, vbo, -1);
 	shader.use();
 	glBindFragDataLocation(shader.getHandle(), 0, "out_color");
-	shader.setAttribute("position", 3, GL_FALSE, 6, 0);
-	shader.setAttribute("color", 3, GL_FALSE, 6, 3);
+	shader.setAttribute("position", 3, GL_FALSE, 7, 0);
+	shader.setAttribute("color", 3, GL_FALSE, 7, 3);
+	shader.setAttribute("fall_time", 1, GL_FALSE, 7, 6);
 
 	// setup wireframe lighting
 	wireframe_lighting.setObjectColor(true);
@@ -77,6 +80,21 @@ void Cubes::removeCube(int id, bool update)
 	if(update) this->update();
 }
 
+void Cubes::removeCube(glm::vec3 p, bool update)
+{
+	for(int i = 0; i < current_n;)
+	{
+		// only increment in the case when we don't delete
+		// this way we can go over the replacement cube as well
+		if(glm::distance(data[i].position, p) < 0.001f)
+		{
+			removeCube(i, update);
+		}else{
+			i++;
+		}
+	}
+}
+
 void Cubes::removeDepth(float depth)
 {
 	for(int i = 0; i < current_n;)
@@ -117,6 +135,20 @@ void Cubes::setColor(int i, glm::vec3 c, bool update)
 	if(update) this->update();
 }
 
+void Cubes::setFalling(int i, bool update)
+{
+	if(i >= current_n) return;
+
+	data[i].fall_time = glfwGetTime();
+
+	if(update) this->update();
+}
+
+void Cubes::setFloatiness(float floatiness)
+{
+	this->floatiness = floatiness;
+}
+
 void Cubes::draw(Camera& camera, Lighting& lighting)
 {
 	shader.use();
@@ -134,13 +166,13 @@ void Cubes::draw(Camera& camera, Lighting& lighting)
 	}
 
 	shader.setUniform("t", (float)glfwGetTime());
+	shader.setUniform("floatiness", floatiness);
 	shader.setUniform("model", model);
 	shader.setUniform("bTexture", false);
 
 	// printf("%f %f %f\n", data[0].position.x, data[0].position.y, data[0].position.z);
 
 	glDrawArrays(GL_POINTS, 0, current_n);
-
 
 	if(wireframe)
 	{

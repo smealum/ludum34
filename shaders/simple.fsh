@@ -23,6 +23,8 @@ uniform bool lights_directional[NUM_LIGHTS];
 
 uniform bool light_objectcolor;
 
+uniform float t;
+
 out vec4 out_color;
 
 void main()
@@ -73,7 +75,9 @@ void main()
 		// Ilight += Ifresnel;
 	}
 
+	float pulse = 1.0 + sin(t * 2.0 + vin.position.z) * 0.1;
+
 	if(bTexture) out_color = texture2D( texture, vec2(vin.texcoord.x, 1.0 - vin.texcoord.y) ).zyxw * vec4(Ilight, 1.0);
-	else if(light_objectcolor) out_color = clamp(vin.color * vec4(Ilight, 1.0), 0.0, 1.0);
+	else if(light_objectcolor) out_color = clamp(vin.color * vec4(pulse, pulse, pulse, 1.0) * vec4(Ilight, 1.0), 0.0, 1.0);
 	else out_color = clamp(vec4(Ilight, vin.color.w), 0.0, 1.0);
 }

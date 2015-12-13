@@ -727,7 +727,7 @@ void ConstraintManager::flushInstancedConstraints()
 		for(int l = 0; l < LEVEL_NUMLAYERS; l++)
 		{
 			bool independent = true;
-			for(int j = 0; independent && j < instanced_data_slice.size(); j++)
+			for(int j = 0; independent && j < (int)instanced_data_slice.size(); j++)
 			{
 				int cur_depth = -1;
 
