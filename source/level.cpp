@@ -143,7 +143,7 @@ void initSlice(slice_s* s)
 	memset(s, 0, sizeof(slice_s));
 }
 
-void rotateSlices(slice_s* dst, slice_s* src, int orientation)
+void rotateSlice(slice_s* dst, slice_s* src, int orientation)
 {
 	orientation %= 4;
 	if(!dst || !src) return;
@@ -188,7 +188,7 @@ void mergeSlices(slice_s* s1, slice_s* s2, int orientation)
 	if(!s1 || !s2) return;
 
 	slice_s s3;
-	rotateSlices(&s3, s2, orientation);
+	rotateSlice(&s3, s2, orientation);
 
 	for(int i = 0; i < LEVEL_WIDTH; i++)
 	{

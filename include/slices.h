@@ -11,4 +11,6 @@ typedef struct
 	unsigned char data[LEVEL_WIDTH][LEVEL_WIDTH];
 }slice_s;
 
+void rotateSlice(slice_s* dst, slice_s* src, int orientation);
+
 #endif

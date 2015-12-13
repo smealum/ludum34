@@ -17,6 +17,7 @@
 #include "input.h"
 #include "level.h"
 #include "path.h"
+#include "hud.h"
 #include "audio.h"
 
 Settings settings(800 * 2, 600 * 2, 3.0f * 2);
@@ -53,7 +54,7 @@ int main(void)
 	glDepthFunc(GL_LESS);
 
 	Player player;
-	Text text("hello", glm::vec2(0.0, 0.0));
+	Hud hud;
 
 	LevelGeneratorRandom levelGenerator_random(32);
 	Level level(levelGenerator_random);
@@ -85,9 +86,13 @@ int main(void)
 		if(Input::isKeyHold(GLFW_KEY_K)) lighting.setLightPosition(0, lighting.getLightPosition(0) - glm::vec3(0.0, 0.0, 2.0) * float(deltaTime));
 
 		if(Input::isKeyPressed(GLFW_KEY_T)) level.rotateLayer(layer);
-		if(Input::isKeyPressed(GLFW_KEY_R)) layer++;
+		if(Input::isKeyPressed(GLFW_KEY_R))
+		{
+			layer++;
+			layer %= LEVEL_NUMLAYERS;
+			hud.updateSelectedLayer(layer);
+		}
 
-		layer %= LEVEL_NUMLAYERS;
 
 		lighting.setLightPosition(0, glm::normalize(lighting.getLightPosition(0)));
 
@@ -110,7 +115,7 @@ int main(void)
 
 			level.draw(camera, lighting, true);
 
-			// text.draw();
+			hud.draw();
 		}
 	}
 

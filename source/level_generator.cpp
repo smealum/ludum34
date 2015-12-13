@@ -88,14 +88,21 @@ slice_s LevelGeneratorStatic::getSlice(int layer)
 class PathStepTypeForward : public PathStepType
 {
 	public:
-		virtual bool getStep(glm::ivec3 position, glm::ivec3& out, std::vector<pathConstraint_s>& constraints)
+		virtual bool getStep(glm::ivec3 position, glm::ivec3& out, ConstraintManager& constraints)
 		{
+			bool ret;
 			out = position + glm::ivec3(0, 0, 1);
 
-			constraints.push_back((pathConstraint_s){position + glm::ivec3(0, -1, 0), CUBEPROPERTY_DIRECTION(CUBEPROPERTY_DIRECTION_FORWARD), false});
-			constraints.push_back((pathConstraint_s){position + glm::ivec3(0, 0, 0), 0, true});
-			constraints.push_back((pathConstraint_s){position + glm::ivec3(0, -1, 1), CUBEPROPERTY_DIRECTION(CUBEPROPERTY_DIRECTION_ANY), false});
-			constraints.push_back((pathConstraint_s){position + glm::ivec3(0, 0, 1), 0, true});
+			ret = constraints.instanceConstraint((pathConstraint_s){position + glm::ivec3(0, -1, 0), CUBEPROPERTY_DIRECTION(CUBEPROPERTY_DIRECTION_FORWARD), false});
+			if(ret) {constraints.clearInstancedConstraints(); return false;}
+			ret = constraints.instanceConstraint((pathConstraint_s){position + glm::ivec3(0, 0, 0), 0, true});
+			if(ret) {constraints.clearInstancedConstraints(); return false;}
+			ret = constraints.instanceConstraint((pathConstraint_s){position + glm::ivec3(0, -1, 1), CUBEPROPERTY_DIRECTION(CUBEPROPERTY_DIRECTION_ANY), false});
+			if(ret) {constraints.clearInstancedConstraints(); return false;}
+			ret = constraints.instanceConstraint((pathConstraint_s){position + glm::ivec3(0, 0, 1), 0, true});
+			if(ret) {constraints.clearInstancedConstraints(); return false;}
+
+			constraints.flushInstancedConstraints();
 
 			return true;
 		}
@@ -104,15 +111,22 @@ class PathStepTypeForward : public PathStepType
 class PathStepTypeLeft : public PathStepType
 {
 	public:
-		virtual bool getStep(glm::ivec3 position, glm::ivec3& out, std::vector<pathConstraint_s>& constraints)
+		virtual bool getStep(glm::ivec3 position, glm::ivec3& out, ConstraintManager& constraints)
 		{
+			bool ret;
 			if(position.x >= LEVEL_WIDTH - 1) return false;
 			out = position + glm::ivec3(1, 0, 0);
 
-			constraints.push_back((pathConstraint_s){position + glm::ivec3(0, -1, 0), CUBEPROPERTY_DIRECTION(CUBEPROPERTY_DIRECTION_LEFT), false});
-			constraints.push_back((pathConstraint_s){position + glm::ivec3(0, 0, 0), 0, true});
-			constraints.push_back((pathConstraint_s){position + glm::ivec3(1, -1, 0), CUBEPROPERTY_DIRECTION(CUBEPROPERTY_DIRECTION_ANY), false});
-			constraints.push_back((pathConstraint_s){position + glm::ivec3(1, 0, 0), 0, true});
+			ret = constraints.instanceConstraint((pathConstraint_s){position + glm::ivec3(0, -1, 0), CUBEPROPERTY_DIRECTION(CUBEPROPERTY_DIRECTION_LEFT), false});
+			if(ret) {constraints.clearInstancedConstraints(); return false;}
+			ret = constraints.instanceConstraint((pathConstraint_s){position + glm::ivec3(0, 0, 0), 0, true});
+			if(ret) {constraints.clearInstancedConstraints(); return false;}
+			ret = constraints.instanceConstraint((pathConstraint_s){position + glm::ivec3(1, -1, 0), CUBEPROPERTY_DIRECTION(CUBEPROPERTY_DIRECTION_ANY), false});
+			if(ret) {constraints.clearInstancedConstraints(); return false;}
+			ret = constraints.instanceConstraint((pathConstraint_s){position + glm::ivec3(1, 0, 0), 0, true});
+			if(ret) {constraints.clearInstancedConstraints(); return false;}
+
+			constraints.flushInstancedConstraints();
 
 			return true;
 		}
@@ -121,16 +135,23 @@ class PathStepTypeLeft : public PathStepType
 class PathStepTypeRight : public PathStepType
 {
 	public:
-		virtual bool getStep(glm::ivec3 position, glm::ivec3& out, std::vector<pathConstraint_s>& constraints)
+		virtual bool getStep(glm::ivec3 position, glm::ivec3& out, ConstraintManager& constraints)
 		{
+			bool ret;
 			if(position.x <= 0) return false;
 			out = position + glm::ivec3(-1, 0, 0);
 
 
-			constraints.push_back((pathConstraint_s){position + glm::ivec3(0, -1, 0), CUBEPROPERTY_DIRECTION(CUBEPROPERTY_DIRECTION_RIGHT), false});
-			constraints.push_back((pathConstraint_s){position + glm::ivec3(0, 0, 0), 0, true});
-			constraints.push_back((pathConstraint_s){position + glm::ivec3(-1, -1, 0), CUBEPROPERTY_DIRECTION(CUBEPROPERTY_DIRECTION_ANY), false});
-			constraints.push_back((pathConstraint_s){position + glm::ivec3(-1, 0, 0), 0, true});
+			ret = constraints.instanceConstraint((pathConstraint_s){position + glm::ivec3(0, -1, 0), CUBEPROPERTY_DIRECTION(CUBEPROPERTY_DIRECTION_RIGHT), false});
+			if(ret) {constraints.clearInstancedConstraints(); return false;}
+			ret = constraints.instanceConstraint((pathConstraint_s){position + glm::ivec3(0, 0, 0), 0, true});
+			if(ret) {constraints.clearInstancedConstraints(); return false;}
+			ret = constraints.instanceConstraint((pathConstraint_s){position + glm::ivec3(-1, -1, 0), CUBEPROPERTY_DIRECTION(CUBEPROPERTY_DIRECTION_ANY), false});
+			if(ret) {constraints.clearInstancedConstraints(); return false;}
+			ret = constraints.instanceConstraint((pathConstraint_s){position + glm::ivec3(-1, 0, 0), 0, true});
+			if(ret) {constraints.clearInstancedConstraints(); return false;}
+
+			constraints.flushInstancedConstraints();
 
 			return true;
 		}
@@ -139,18 +160,26 @@ class PathStepTypeRight : public PathStepType
 class PathStepTypeAboveLeft : public PathStepType
 {
 	public:
-		virtual bool getStep(glm::ivec3 position, glm::ivec3& out, std::vector<pathConstraint_s>& constraints)
+		virtual bool getStep(glm::ivec3 position, glm::ivec3& out, ConstraintManager& constraints)
 		{
+			bool ret;
 			if(position.x >= LEVEL_WIDTH - 1) return false;
 			// TODO : random height
 			if(position.y >= LEVEL_WIDTH - 1) return false;
 			out = position + glm::ivec3(1, 1, 0);
 
-			constraints.push_back((pathConstraint_s){position + glm::ivec3(0, -1, 0), CUBEPROPERTY_DIRECTION(CUBEPROPERTY_DIRECTION_LEFT), false});
-			constraints.push_back((pathConstraint_s){position + glm::ivec3(0, 0, 0), 0, true});
-			constraints.push_back((pathConstraint_s){position + glm::ivec3(0, 1, 0), 0, true});
-			constraints.push_back((pathConstraint_s){position + glm::ivec3(1, 0, 0), CUBEPROPERTY_DIRECTION(CUBEPROPERTY_DIRECTION_ANY) | CUBEPROPERTY_CLIMBABLE(1), false});
-			constraints.push_back((pathConstraint_s){position + glm::ivec3(1, 1, 0), 0, true});
+			ret = constraints.instanceConstraint((pathConstraint_s){position + glm::ivec3(0, -1, 0), CUBEPROPERTY_DIRECTION(CUBEPROPERTY_DIRECTION_LEFT), false});
+			if(ret) {constraints.clearInstancedConstraints(); return false;}
+			ret = constraints.instanceConstraint((pathConstraint_s){position + glm::ivec3(0, 0, 0), 0, true});
+			if(ret) {constraints.clearInstancedConstraints(); return false;}
+			ret = constraints.instanceConstraint((pathConstraint_s){position + glm::ivec3(0, 1, 0), 0, true});
+			if(ret) {constraints.clearInstancedConstraints(); return false;}
+			ret = constraints.instanceConstraint((pathConstraint_s){position + glm::ivec3(1, 0, 0), CUBEPROPERTY_DIRECTION(CUBEPROPERTY_DIRECTION_FORWARD) | CUBEPROPERTY_CLIMBABLE(1), false});
+			if(ret) {constraints.clearInstancedConstraints(); return false;}
+			ret = constraints.instanceConstraint((pathConstraint_s){position + glm::ivec3(1, 1, 0), 0, true});
+			if(ret) {constraints.clearInstancedConstraints(); return false;}
+
+			constraints.flushInstancedConstraints();
 
 			return true;
 		}
@@ -159,18 +188,26 @@ class PathStepTypeAboveLeft : public PathStepType
 class PathStepTypeAboveRight : public PathStepType
 {
 	public:
-		virtual bool getStep(glm::ivec3 position, glm::ivec3& out, std::vector<pathConstraint_s>& constraints)
+		virtual bool getStep(glm::ivec3 position, glm::ivec3& out, ConstraintManager& constraints)
 		{
+			bool ret;
 			if(position.x <= 0) return false;
 			// TODO : random height
 			if(position.y >= LEVEL_WIDTH - 1) return false;
 			out = position + glm::ivec3(-1, 1, 0);
 
-			constraints.push_back((pathConstraint_s){position + glm::ivec3(0, -1, 0), CUBEPROPERTY_DIRECTION(CUBEPROPERTY_DIRECTION_RIGHT), false});
-			constraints.push_back((pathConstraint_s){position + glm::ivec3(0, 0, 0), 0, true});
-			constraints.push_back((pathConstraint_s){position + glm::ivec3(0, 1, 0), 0, true});
-			constraints.push_back((pathConstraint_s){position + glm::ivec3(-1, 0, 0), CUBEPROPERTY_DIRECTION(CUBEPROPERTY_DIRECTION_ANY) | CUBEPROPERTY_CLIMBABLE(1), false});
-			constraints.push_back((pathConstraint_s){position + glm::ivec3(-1, 1, 0), 0, true});
+			ret = constraints.instanceConstraint((pathConstraint_s){position + glm::ivec3(0, -1, 0), CUBEPROPERTY_DIRECTION(CUBEPROPERTY_DIRECTION_RIGHT), false});
+			if(ret) {constraints.clearInstancedConstraints(); return false;}
+			ret = constraints.instanceConstraint((pathConstraint_s){position + glm::ivec3(0, 0, 0), 0, true});
+			if(ret) {constraints.clearInstancedConstraints(); return false;}
+			ret = constraints.instanceConstraint((pathConstraint_s){position + glm::ivec3(0, 1, 0), 0, true});
+			if(ret) {constraints.clearInstancedConstraints(); return false;}
+			ret = constraints.instanceConstraint((pathConstraint_s){position + glm::ivec3(-1, 0, 0), CUBEPROPERTY_DIRECTION(CUBEPROPERTY_DIRECTION_FORWARD) | CUBEPROPERTY_CLIMBABLE(1), false});
+			if(ret) {constraints.clearInstancedConstraints(); return false;}
+			ret = constraints.instanceConstraint((pathConstraint_s){position + glm::ivec3(-1, 1, 0), 0, true});
+			if(ret) {constraints.clearInstancedConstraints(); return false;}
+
+			constraints.flushInstancedConstraints();
 
 			return true;
 		}
@@ -179,17 +216,25 @@ class PathStepTypeAboveRight : public PathStepType
 class PathStepTypeAboveForward : public PathStepType
 {
 	public:
-		virtual bool getStep(glm::ivec3 position, glm::ivec3& out, std::vector<pathConstraint_s>& constraints)
+		virtual bool getStep(glm::ivec3 position, glm::ivec3& out, ConstraintManager& constraints)
 		{
+			bool ret;
 			// TODO : random height
 			if(position.y >= LEVEL_WIDTH - 1) return false;
 			out = position + glm::ivec3(0, 1, 1);
 
-			constraints.push_back((pathConstraint_s){position + glm::ivec3(0, -1, 0), CUBEPROPERTY_DIRECTION(CUBEPROPERTY_DIRECTION_FORWARD), false});
-			constraints.push_back((pathConstraint_s){position + glm::ivec3(0, 0, 0), 0, true});
-			constraints.push_back((pathConstraint_s){position + glm::ivec3(0, 1, 0), 0, true});
-			constraints.push_back((pathConstraint_s){position + glm::ivec3(0, 0, 1), CUBEPROPERTY_DIRECTION(CUBEPROPERTY_DIRECTION_ANY) | CUBEPROPERTY_CLIMBABLE(1), false});
-			constraints.push_back((pathConstraint_s){position + glm::ivec3(0, 1, 1), 0, true});
+			ret = constraints.instanceConstraint((pathConstraint_s){position + glm::ivec3(0, -1, 0), CUBEPROPERTY_DIRECTION(CUBEPROPERTY_DIRECTION_FORWARD), false});
+			if(ret) {constraints.clearInstancedConstraints(); return false;}
+			ret = constraints.instanceConstraint((pathConstraint_s){position + glm::ivec3(0, 0, 0), 0, true});
+			if(ret) {constraints.clearInstancedConstraints(); return false;}
+			ret = constraints.instanceConstraint((pathConstraint_s){position + glm::ivec3(0, 1, 0), 0, true});
+			if(ret) {constraints.clearInstancedConstraints(); return false;}
+			ret = constraints.instanceConstraint((pathConstraint_s){position + glm::ivec3(0, 0, 1), CUBEPROPERTY_DIRECTION(CUBEPROPERTY_DIRECTION_FORWARD) | CUBEPROPERTY_CLIMBABLE(1), false});
+			if(ret) {constraints.clearInstancedConstraints(); return false;}
+			ret = constraints.instanceConstraint((pathConstraint_s){position + glm::ivec3(0, 1, 1), 0, true});
+			if(ret) {constraints.clearInstancedConstraints(); return false;}
+
+			constraints.flushInstancedConstraints();
 
 			return true;
 		}
@@ -198,18 +243,26 @@ class PathStepTypeAboveForward : public PathStepType
 class PathStepTypeBelowLeft : public PathStepType
 {
 	public:
-		virtual bool getStep(glm::ivec3 position, glm::ivec3& out, std::vector<pathConstraint_s>& constraints)
+		virtual bool getStep(glm::ivec3 position, glm::ivec3& out, ConstraintManager& constraints)
 		{
+			bool ret;
 			if(position.x >= LEVEL_WIDTH - 1) return false;
 			// TODO : random height
 			if(position.y <= 0) return false;
 			out = position + glm::ivec3(1, -1, 0);
 
-			constraints.push_back((pathConstraint_s){position + glm::ivec3(0, -1, 0), CUBEPROPERTY_DIRECTION(CUBEPROPERTY_DIRECTION_LEFT), false});
-			constraints.push_back((pathConstraint_s){position + glm::ivec3(0, 0, 0), 0, true});
-			constraints.push_back((pathConstraint_s){position + glm::ivec3(1, 0, 0), 0, true});
-			constraints.push_back((pathConstraint_s){position + glm::ivec3(1, -1, 0), 0, true});
-			constraints.push_back((pathConstraint_s){position + glm::ivec3(1, -2, 0), CUBEPROPERTY_DIRECTION(CUBEPROPERTY_DIRECTION_ANY), false});
+			ret = constraints.instanceConstraint((pathConstraint_s){position + glm::ivec3(0, -1, 0), CUBEPROPERTY_DIRECTION(CUBEPROPERTY_DIRECTION_LEFT), false});
+			if(ret) {constraints.clearInstancedConstraints(); return false;}
+			ret = constraints.instanceConstraint((pathConstraint_s){position + glm::ivec3(0, 0, 0), 0, true});
+			if(ret) {constraints.clearInstancedConstraints(); return false;}
+			ret = constraints.instanceConstraint((pathConstraint_s){position + glm::ivec3(1, 0, 0), 0, true});
+			if(ret) {constraints.clearInstancedConstraints(); return false;}
+			ret = constraints.instanceConstraint((pathConstraint_s){position + glm::ivec3(1, -1, 0), 0, true});
+			if(ret) {constraints.clearInstancedConstraints(); return false;}
+			ret = constraints.instanceConstraint((pathConstraint_s){position + glm::ivec3(1, -2, 0), CUBEPROPERTY_DIRECTION(CUBEPROPERTY_DIRECTION_ANY), false});
+			if(ret) {constraints.clearInstancedConstraints(); return false;}
+
+			constraints.flushInstancedConstraints();
 
 			return true;
 		}
@@ -218,18 +271,26 @@ class PathStepTypeBelowLeft : public PathStepType
 class PathStepTypeBelowRight : public PathStepType
 {
 	public:
-		virtual bool getStep(glm::ivec3 position, glm::ivec3& out, std::vector<pathConstraint_s>& constraints)
+		virtual bool getStep(glm::ivec3 position, glm::ivec3& out, ConstraintManager& constraints)
 		{
+			bool ret;
 			if(position.x <= 0) return false;
 			// TODO : random height
 			if(position.y <= 0) return false;
 			out = position + glm::ivec3(-1, -1, 0);
 
-			constraints.push_back((pathConstraint_s){position + glm::ivec3(0, -1, 0), CUBEPROPERTY_DIRECTION(CUBEPROPERTY_DIRECTION_RIGHT), false});
-			constraints.push_back((pathConstraint_s){position + glm::ivec3(0, 0, 0), 0, true});
-			constraints.push_back((pathConstraint_s){position + glm::ivec3(-1, 0, 0), 0, true});
-			constraints.push_back((pathConstraint_s){position + glm::ivec3(-1, -1, 0), 0, true});
-			constraints.push_back((pathConstraint_s){position + glm::ivec3(-1, -2, 0), CUBEPROPERTY_DIRECTION(CUBEPROPERTY_DIRECTION_ANY), false});
+			ret = constraints.instanceConstraint((pathConstraint_s){position + glm::ivec3(0, -1, 0), CUBEPROPERTY_DIRECTION(CUBEPROPERTY_DIRECTION_RIGHT), false});
+			if(ret) {constraints.clearInstancedConstraints(); return false;}
+			ret = constraints.instanceConstraint((pathConstraint_s){position + glm::ivec3(0, 0, 0), 0, true});
+			if(ret) {constraints.clearInstancedConstraints(); return false;}
+			ret = constraints.instanceConstraint((pathConstraint_s){position + glm::ivec3(-1, 0, 0), 0, true});
+			if(ret) {constraints.clearInstancedConstraints(); return false;}
+			ret = constraints.instanceConstraint((pathConstraint_s){position + glm::ivec3(-1, -1, 0), 0, true});
+			if(ret) {constraints.clearInstancedConstraints(); return false;}
+			ret = constraints.instanceConstraint((pathConstraint_s){position + glm::ivec3(-1, -2, 0), CUBEPROPERTY_DIRECTION(CUBEPROPERTY_DIRECTION_ANY), false});
+			if(ret) {constraints.clearInstancedConstraints(); return false;}
+
+			constraints.flushInstancedConstraints();
 
 			return true;
 		}
@@ -238,17 +299,25 @@ class PathStepTypeBelowRight : public PathStepType
 class PathStepTypeBelowForward : public PathStepType
 {
 	public:
-		virtual bool getStep(glm::ivec3 position, glm::ivec3& out, std::vector<pathConstraint_s>& constraints)
+		virtual bool getStep(glm::ivec3 position, glm::ivec3& out, ConstraintManager& constraints)
 		{
+			bool ret;
 			// TODO : random height
 			if(position.y <= 0) return false;
 			out = position + glm::ivec3(0, -1, 1);
 
-			constraints.push_back((pathConstraint_s){position + glm::ivec3(0, -1, 0), CUBEPROPERTY_DIRECTION(CUBEPROPERTY_DIRECTION_FORWARD), false});
-			constraints.push_back((pathConstraint_s){position + glm::ivec3(0, 0, 0), 0, true});
-			constraints.push_back((pathConstraint_s){position + glm::ivec3(0, 0, 1), 0, true});
-			constraints.push_back((pathConstraint_s){position + glm::ivec3(0, -1, 1), 0, true});
-			constraints.push_back((pathConstraint_s){position + glm::ivec3(0, -2, 1), CUBEPROPERTY_DIRECTION(CUBEPROPERTY_DIRECTION_ANY), false});
+			ret = constraints.instanceConstraint((pathConstraint_s){position + glm::ivec3(0, -1, 0), CUBEPROPERTY_DIRECTION(CUBEPROPERTY_DIRECTION_FORWARD), false});
+			if(ret) {constraints.clearInstancedConstraints(); return false;}
+			ret = constraints.instanceConstraint((pathConstraint_s){position + glm::ivec3(0, 0, 0), 0, true});
+			if(ret) {constraints.clearInstancedConstraints(); return false;}
+			ret = constraints.instanceConstraint((pathConstraint_s){position + glm::ivec3(0, 0, 1), 0, true});
+			if(ret) {constraints.clearInstancedConstraints(); return false;}
+			ret = constraints.instanceConstraint((pathConstraint_s){position + glm::ivec3(0, -1, 1), 0, true});
+			if(ret) {constraints.clearInstancedConstraints(); return false;}
+			ret = constraints.instanceConstraint((pathConstraint_s){position + glm::ivec3(0, -2, 1), CUBEPROPERTY_DIRECTION(CUBEPROPERTY_DIRECTION_ANY), false});
+			if(ret) {constraints.clearInstancedConstraints(); return false;}
+
+			constraints.flushInstancedConstraints();
 
 			return true;
 		}
@@ -284,7 +353,7 @@ Markov::Markov(pathStepRandom_s* steps, int length):
 	dist = std::uniform_real_distribution<float>(0.0, total_weights);
 }
 
-glm::ivec3 Markov::getStep(glm::ivec3 position, std::vector<pathConstraint_s>& constraints)
+glm::ivec3 Markov::getStep(glm::ivec3 position, ConstraintManager& constraints)
 {
 	bool rejected[length];
 	int num_rejections = 0;
@@ -351,7 +420,7 @@ void LevelGeneratorRandom::generatePath()
 		generatePathStep();
 	}
 
-	std::sort(constraints.begin(), constraints.end(), constraintCompare);
+	constraints.sort();
 
 	// for(int i = 0; i < (int)path.size(); i++)
 	// {
@@ -361,7 +430,9 @@ void LevelGeneratorRandom::generatePath()
 	for(int i = 0; i < (int)constraints.size(); i++)
 	{
 		// std::cout << glm::to_string(constraints[i].position) << " " << constraints[i].properties << " " << constraints[i].empty << std::endl;
-		int depth = constraints[i].position.z;
+		pathConstraint_s c;
+		constraints.getConstraint(i, c);
+		int depth = c.position.z;
 		if(depth > 0 && depthMap[depth] == 0)
 		{
 			depthMap[depth] = i;
@@ -385,17 +456,20 @@ slice_s LevelGeneratorRandom::getSlice(int layer)
 	slice_s ret;
 	memset(&ret, 0, sizeof(slice_s));
 
-	while(index < (int)constraints.size() && constraints[index].position.z == depth)
+	pathConstraint_s c;
+	constraints.getConstraint(index, c);
+	
+	while(index < (int)constraints.size() && c.position.z == depth)
 	{
-		glm::ivec3 p = constraints[index].position;
+		glm::ivec3 p = c.position;
 		
-		if(!constraints[index].empty)
+		if(!c.empty)
 		{
 			int v = 0;
-			cubePropertyDirection_t dir = CUBEPROPERTY_GET_DIRECTION(constraints[index].properties);
-			bool climbable = CUBEPROPERTY_GET_CLIMBABLE(constraints[index].properties);
+			cubePropertyDirection_t dir = CUBEPROPERTY_GET_DIRECTION(c.properties);
+			bool climbable = CUBEPROPERTY_GET_CLIMBABLE(c.properties);
 			
-			std::cout << glm::to_string(p) << " " << constraints[index].empty << " " << constraints[index].properties << std::endl;
+			std::cout << glm::to_string(p) << " " << c.empty << " " << c.properties << std::endl;
 
 			if(!climbable)
 			{
@@ -417,9 +491,104 @@ slice_s LevelGeneratorRandom::getSlice(int layer)
 		}
 
 		index++;
+
+		constraints.getConstraint(index, c);
 	}
 
 	n[layer]++;
 
 	return ret;
+}
+
+ConstraintManager::ConstraintManager()
+{
+
+}
+
+bool ConstraintManager::doesConstraintConflict(pathConstraint_s constraint)
+{
+	if(dataMap.find(constraint.position) == dataMap.end()) return false;
+
+	pathConstraint_s _constraint = dataMap[constraint.position];
+	if(constraint.empty != _constraint.empty) return true;
+
+	cubePropertyDirection_t _dir = CUBEPROPERTY_GET_DIRECTION(_constraint.properties);
+	cubePropertyDirection_t dir = CUBEPROPERTY_GET_DIRECTION(constraint.properties); 
+
+	return !(_dir == CUBEPROPERTY_DIRECTION_ANY || dir == CUBEPROPERTY_DIRECTION_ANY || _dir == dir);
+}
+
+pathConstraint_s ConstraintManager::mergeConstraints(pathConstraint_s constraint)
+{
+	pathConstraint_s _constraint = dataMap[constraint.position];
+
+	cubePropertyDirection_t _dir = CUBEPROPERTY_GET_DIRECTION(_constraint.properties);
+	cubePropertyDirection_t dir = CUBEPROPERTY_GET_DIRECTION(constraint.properties);
+
+	if(_dir == CUBEPROPERTY_DIRECTION_ANY) _constraint.properties = (_constraint.properties & ~ CUBEPROPERTY_DIRECTION(0xFF)) | CUBEPROPERTY_DIRECTION(dir) | CUBEPROPERTY_CLIMBABLE(CUBEPROPERTY_GET_CLIMBABLE(constraint.properties));
+
+	return _constraint;
+}
+
+bool ConstraintManager::instanceConstraint(pathConstraint_s constraint)
+{
+	bool ret = doesConstraintConflict(constraint);
+
+	if(ret) return true;
+
+	instanced_data.push_back(constraint);
+
+	return false;
+}
+
+void ConstraintManager::clearInstancedConstraints()
+{
+	instanced_data.clear();
+}
+
+void ConstraintManager::flushInstancedConstraints()
+{
+	for(int i = 0; i < (int)instanced_data.size(); i++)
+	{
+		addConstraint(instanced_data[i]);
+	}
+
+	clearInstancedConstraints();
+}
+
+void ConstraintManager::setConstraint(pathConstraint_s constraint)
+{
+	if(dataMap.find(constraint.position) == dataMap.end()) return;
+
+	*&dataMap[constraint.position] = constraint;
+}
+
+void ConstraintManager::addConstraint(pathConstraint_s constraint)
+{
+	if(dataMap.find(constraint.position) != dataMap.end()) setConstraint(mergeConstraints(constraint));
+	else{
+		dataMap[constraint.position] = constraint;
+		data.push_back(&dataMap[constraint.position]);
+	}
+}
+
+bool ConstraintManager::getConstraint(int id, pathConstraint_s& out)
+{
+	if(id < 0 || id >= (int)data.size()) return false;
+
+	out = *data[id];
+
+	return true;
+}
+
+bool constraintPointerCompare (pathConstraint_s* i, pathConstraint_s* j) { return (i->position.z < j->position.z); }
+
+void ConstraintManager::sort()
+{
+	std::sort(data.begin(), data.end(), constraintPointerCompare);
+}
+
+int ConstraintManager::size()
+{
+	return (int)data.size();
 }
