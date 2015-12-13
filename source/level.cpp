@@ -451,10 +451,11 @@ void Level::update(float delta)
 	// TEMP
 	if(Input::isKeyPressed(GLFW_KEY_P))
 	{
-		// slices.cubes.setFalling(0, true);
-		// slices.cubes_wireframe.setFalling(0, true);
-		killCube(glm::vec3(0.0f, -1.0f, 0.0f));
-		killCube(glm::vec3(1.0f, 0.0f, 0.0f));
+		for(int i = 0; i < SC_NUMCUBES; i++)
+		{
+			slices.cubes.setIntro(i, true);
+			slices.cubes_wireframe.setIntro(i, true);
+		}
 	}
 
 	if(needUpdate)

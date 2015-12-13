@@ -42,6 +42,12 @@ void main() {
 		vec3 fall_component = vec3(0.0, -1.0, 0.0) * f * f * 4.0;
 		if(fall_component.y < -30.0f) return;
 		pos += fall_component;
+	}else if(vin[0].fall_time < -0.0001)
+	{
+		// intro
+		float f = max(2.0 - (t - (-vin[0].fall_time - (pos.z * 0.3 + 3.5))), 0.0);
+		vec3 intro_component = vec3(0.0, -1.0, 0.0) * f * f * 4.0;
+		pos += intro_component;
 	}
 	vec3 tmp;
 

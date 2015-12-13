@@ -52,7 +52,7 @@ glm::vec3 Player::getPosition()
 
 void Player::updateCamera(Camera& camera)
 {
-	camera.setPosition(position + direction * float(progress / target_progress) + glm::vec3(-5.0f, 10.0f, -5.0f));
+	camera.setPosition(position + direction * float(progress / target_progress) + glm::vec3(-5.5f, 10.0f, -2.0f) * 1.2f);
 }
 
 void Player::startNextMove()

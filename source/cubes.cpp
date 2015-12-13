@@ -144,6 +144,15 @@ void Cubes::setFalling(int i, bool update)
 	if(update) this->update();
 }
 
+void Cubes::setIntro(int i, bool update)
+{
+	if(i >= current_n) return;
+
+	data[i].fall_time = -glfwGetTime();
+
+	if(update) this->update();
+}
+
 void Cubes::setFloatiness(float floatiness)
 {
 	this->floatiness = floatiness;

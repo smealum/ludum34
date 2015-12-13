@@ -24,6 +24,7 @@ class Cubes
 
 		void setPosition(int i, glm::vec3 p, bool update = false);
 		void setColor(int i, glm::vec3 c, bool update = false);
+		void setIntro(int i, bool update = false);
 		void setFalling(int i, bool update = false);
 		void setFloatiness(float floatiness);
 
