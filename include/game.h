@@ -15,6 +15,12 @@ typedef enum
 	GAME_OUTRO,
 }gameState_t;
 
+typedef enum
+{
+	GAME_GAMEOVER,
+	GAME_NEXTLEVEL,
+}gameTransitionTarget_t;
+
 class Game
 {
 	public:
@@ -27,7 +33,7 @@ class Game
 		void resetLevel();
 
 		void startIntro();
-		void startOutro();
+		void startOutro(gameTransitionTarget_t tt);
 
 	private:
 		Camera camera;
@@ -37,9 +43,12 @@ class Game
 
 		Level* level;
 
+		float playerTimer;
+
 		int layer;
 
 		gameState_t state;
+		gameTransitionTarget_t transitionTarget;
 		double timeStart;
 };
 

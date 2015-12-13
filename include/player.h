@@ -30,7 +30,7 @@ class Player
 		
 		void setNextMove(glm::vec3 direction);
 		void startNextMove(void);
-		void doStep(Level& level);
+		void doStep(Level& level, bool nonlethal = false);
 
 		void setType(unsigned char type);
 		void updatePath(Level& level);
@@ -39,6 +39,9 @@ class Player
 
 		void finishIntro();
 		void startOutro();
+
+		bool getAutopilot();
+		void setAutopilot(bool v);
 		
 		glm::vec3 getPosition();
 		bool isGameover();
@@ -55,6 +58,9 @@ class Player
 		playerState_t state;
 		Cubes cube, cube_outline;
 		Path path;
+
+		bool done_intro;
+		bool autopilot;
 
 		unsigned char type;
 

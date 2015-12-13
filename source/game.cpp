@@ -33,9 +33,10 @@ void Game::startIntro()
 	resetLevel();
 }
 
-void Game::startOutro()
+void Game::startOutro(gameTransitionTarget_t tt)
 {
 	state = GAME_OUTRO;
+	transitionTarget = tt;
 	player.startOutro();
 	level->startOutro();
 	timeStart = glfwGetTime();
@@ -73,22 +74,52 @@ void Game::update(float delta)
 		case GAME_PLAYING:
 			if(level->isEndPosition(player.getPosition()))
 			{
-				startOutro();
+				startOutro(GAME_NEXTLEVEL);
 			}
 
 			if(player.isGameover())
 			{
-				startOutro();
+				startOutro(GAME_GAMEOVER);
 			}
 			break;
 		case GAME_OUTRO:
 			if(glfwGetTime() - timeStart > 5.0)
 			{
+				if(transitionTarget == GAME_NEXTLEVEL)
+				{
+					// mem leak !
+					loadLevel(*(new LevelGeneratorRandom()));
+				}
+
 				startIntro();
 			}
 			break;
 		default:
 			break;
+	}
+
+	if(!player.getAutopilot())
+	{
+		if(playerTimer <= -50.0f)
+		{
+			// reset playertimer !
+			playerTimer = 2.0f;
+		}else if(playerTimer <= 0.0f)
+		{
+			playerTimer = -500.0f;
+			player.setAutopilot(true);
+		}else{
+			playerTimer -= delta;
+		}
+	}else{
+		// player is currently autopiloting
+		// do nothing
+	}
+
+	// TEMP
+	if(Input::isKeyPressed(GLFW_KEY_SPACE))
+	{
+		player.setAutopilot(true);
 	}
 
 	if(Input::isKeyPressed(GLFW_KEY_R))

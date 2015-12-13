@@ -34,16 +34,28 @@ void Player::reset()
 	progress = 0.0f;
 	target_progress = 1.0f;
 	state = PLAYER_INTRO;
+
+	done_intro = false;
+
+	progress = 0.0f;
+	speed = 0.0f;
+	target_progress = 2 * M_PI;
+
+	autopilot = false;
+
 	type = 0;
 	moves.clear();
 }
 
 void Player::finishIntro()
 {
-	if(state == PLAYER_INTRO)
-	{
-		state = PLAYER_NEWLYIDLE;
-	}
+	done_intro = true;
+	// if(state == PLAYER_INTRO)
+	// {
+	// 	state = PLAYER_NEWLYIDLE;
+	// 	rotation = false;
+	// 	progress = 0.0f;
+	// }
 }
 
 void Player::startOutro()
@@ -51,6 +63,9 @@ void Player::startOutro()
 	if(state != PLAYER_OUTRO)
 	{
 		state = PLAYER_OUTRO;
+		progress = 0.0f;
+		speed = 0.0f;
+		target_progress = 2 * M_PI;
 	}
 }
 
@@ -74,7 +89,8 @@ glm::vec3 Player::getPosition()
 
 void Player::updateCamera(Camera& camera)
 {
-	camera.setPosition(position + direction * float(progress / target_progress) + glm::vec3(-5.5f, 10.0f, -2.0f) * 1.2f);
+	if(state == PLAYER_INTRO || state == PLAYER_OUTRO) camera.setPosition(position + glm::vec3(-5.5f, 10.0f, -2.0f) * 1.2f);
+	else camera.setPosition(position + direction * float(progress / target_progress) + glm::vec3(-5.5f, 10.0f, -2.0f) * 1.2f);
 }
 
 void Player::startNextMove()
@@ -108,7 +124,17 @@ void Player::startNextMove()
 	state = PLAYER_MOVING;
 }
 
-void Player::doStep(Level& level)
+bool Player::getAutopilot()
+{
+	return autopilot;
+}
+
+void Player::setAutopilot(bool v)
+{
+	autopilot = v;
+}
+
+void Player::doStep(Level& level, bool nonlethal)
 {
 	if(state != PLAYER_IDLE || !moves.empty()) return;
 
@@ -119,12 +145,18 @@ void Player::doStep(Level& level)
 	if(glm::distance(position, next) < 0.001f)
 	{
 		// TODO : cause malus
+		autopilot = false;
 		return;
 	}
 
 	// is next on same horizontal plane ?
 	if(fabs(position.y - next.y) < 0.001f)
 	{
+		if((next.x <= -LEVEL_WIDTH / 2 || next.x > LEVEL_WIDTH / 2) && nonlethal)
+		{
+			autopilot = false;
+			return;
+		}
 		setNextMove(next - position);
 		return;
 	}
@@ -147,6 +179,11 @@ void Player::doStep(Level& level)
 	// is next below us ?
 	if(position.y > next.y)
 	{
+		if(next.y <= -LEVEL_WIDTH / 2 && nonlethal)
+		{
+			autopilot = false;
+			return;
+		}
 		int height_differential = int(position.y - next.y);
 		glm::vec3 _direction = next - position;
 		_direction.y = 0.0f;
@@ -176,6 +213,29 @@ void Player::update(Level& level, float delta)
 		switch(state)
 		{
 			case PLAYER_INTRO:
+			case PLAYER_OUTRO:
+				{
+					if(progress < target_progress)
+					{
+						speed += sin(progress) * 10.0f * delta;
+						progress += 2.0f * delta;
+					}else{
+						if(fabs(fmod(speed, M_PI / 2)) < 0.2f)
+						{
+							progress = target_progress;
+
+							if(state == PLAYER_INTRO && done_intro)
+							{
+								state = PLAYER_NEWLYIDLE;
+								rotation = false;
+								progress = 0.0f;
+							}
+						}else
+						{
+							speed += sin(progress) * 20.0f * delta;
+						}
+					}
+				}
 				break;
 			case PLAYER_IDLE:
 				{
@@ -229,10 +289,9 @@ void Player::update(Level& level, float delta)
 
 	path.update(delta);
 
-	// TEMP
-	if(Input::isKeyHold(GLFW_KEY_SPACE))
+	if(autopilot)
 	{
-		doStep(level);
+		doStep(level, true);
 	}
 
 	if(Input::isKeyPressed(GLFW_KEY_Z))
@@ -290,13 +349,19 @@ void Player::draw(Camera& camera, Lighting& lighting, bool shadow)
 		glDepthMask(GL_FALSE);
 	}
 
-	if(rotation)
+	if(state == PLAYER_OUTRO || state == PLAYER_INTRO)
 	{
-		cube.model = glm::rotate(glm::mat4(1.0f), progress, rotation_axis) * glm::translate(glm::mat4(1.0f), rotation_center);
-		cube.model = glm::translate(glm::mat4(1.0f), position - rotation_center) * cube.model;
+		cube.model = glm::translate(glm::mat4(1.0f), position) * glm::rotate(glm::mat4(1.0f), speed, glm::vec3(0, 1, 0));
 	}else{
-		cube.model = glm::translate(glm::mat4(1.0f), position + direction * progress / target_progress);
+		if(rotation)
+		{
+			cube.model = glm::rotate(glm::mat4(1.0f), progress, rotation_axis) * glm::translate(glm::mat4(1.0f), rotation_center);
+			cube.model = glm::translate(glm::mat4(1.0f), position - rotation_center) * cube.model;
+		}else{
+			cube.model = glm::translate(glm::mat4(1.0f), position + direction * progress / target_progress);
+		}
 	}
+
 	
 	cube.draw(camera, shadow ? shadow_lighting : lighting);
 	if(state != PLAYER_INTRO) path.draw(camera, shadow ? shadow_lighting : lighting);
