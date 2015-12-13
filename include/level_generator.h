@@ -10,21 +10,11 @@
 class LevelGenerator
 {
 	public:
-		virtual slice_s getSlice(int layer) = 0;
+		virtual bool getSlice(int layer, slice_s& out) = 0;
+		virtual void reset() = 0;
 
 	private:
 
-};
-
-class LevelGeneratorStatic : public LevelGenerator
-{
-	public:
-		LevelGeneratorStatic();
-
-		virtual slice_s getSlice(int layer);
-
-	private:
-		int n[LEVEL_NUMLAYERS];
 };
 
 typedef struct
@@ -121,11 +111,12 @@ class LevelGeneratorRandom : public LevelGenerator
 	public:
 		LevelGeneratorRandom(int length);
 
-		virtual slice_s getSlice(int layer);
+		virtual bool getSlice(int layer, slice_s& out);
 		void generatePath();
 		void generatePathStep();
 
-		void reset();
+		void clear();
+		virtual void reset();
 
 	private:
 		int n[LEVEL_NUMLAYERS];

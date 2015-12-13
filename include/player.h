@@ -6,7 +6,7 @@
 #include "level.h"
 #include "path.h"
 
-#include <queue>
+#include <deque>
 
 #define PLAYER_PATHLENGTH (8)
 
@@ -35,6 +35,8 @@ class Player
 		bool canRotateLayer(Level& level, int layer);
 		
 		glm::vec3 getPosition();
+
+		void reset();
 		
 	private:
 		glm::vec3 position, last_position;
@@ -49,7 +51,7 @@ class Player
 
 		unsigned char type;
 
-		std::queue<glm::vec3> moves;
+		std::deque<glm::vec3> moves;
 };
 
 #endif

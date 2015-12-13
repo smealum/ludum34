@@ -20,67 +20,6 @@ static slice_s first_slice =
 		}	
 	};
 
-static slice_s test_slice[] = 
-{
-	(slice_s)
-	{
-		{ 
-		  {1, 0, 0, 0, 0, 0, 0, 0, 0},  
-		  {1, 0, 0, 0, 0, 0, 0, 0, 0}, 
-		  {1, 0, 0, 0, 0, 0, 0, 0, 0}, 
-		  {1, 0, 0, 0, 0, 0, 0, 0, 0}, 
-		  {1, 1, 0, 0, 0, 0, 0, 0, 0}, 
-		  {1, 0, 0, 0, 1, 0, 0, 0, 0}, 
-		  {1, 0, 0, 0, 0, 0, 0, 0, 0}, 
-		  {1, 0, 0, 0, 0, 0, 0, 0, 0}, 
-		  {1, 1, 1, 1, 1, 1, 1, 1, 1}
-		}	
-	},
-	(slice_s)
-	{
-		{ 
-		  {0, 0, 0, 0, 0, 0, 0, 0, 0},  
-		  {0, 0, 0, 0, 0, 0, 0, 0, 0}, 
-		  {0, 0, 0, 0, 0, 0, 0, 0, 0}, 
-		  {0, 0, 0, 0, 0, 0, 0, 0, 0}, 
-		  {0, 2 << 4, 0, 0, 2 << 4, 0, 0, 0, 0}, 
-		  {0, 0, 0, 0, 2 << 4, 0, 0, 0, 0}, 
-		  {0, 0, 0, 0, 0, 0, 0, 0, 0}, 
-		  {0, 0, 0, 0, 0, 0, 0, 0, 0}, 
-		  {0, 0, 0, 0, 0, 0, 0, 0, 0}
-		}	
-	},
-	(slice_s)
-	{
-		{ 
-		  {0, 0, 0, 0, 0, 0, 0, 0, 0},  
-		  {0, 0, 0, 0, 0, 0, 0, 0, 0}, 
-		  {0, 0, 0, 0, 0, 0, 0, 0, 0}, 
-		  {0, 0, 0, 0, 0, 0, 0, 0, 0}, 
-		  {0, 0, 0, 0, 3 << 4, 0, 0, 0, 0}, 
-		  {0, 0, 0, 0, 3 << 4, 3, (3 << 4) | 3, 0, 0}, 
-		  {0, 0, 0, 0, 0, 0, 0, 0, 0}, 
-		  {0, 0, 0, 0, 0, 0, 0, 0, 0}, 
-		  {0, 0, 0, 0, 0, 0, 0, 0, 0}
-		}	
-	},
-};
-
-
-LevelGeneratorStatic::LevelGeneratorStatic()
-{
-	for(int i = 0; i < LEVEL_NUMLAYERS; i++)
-	{
-		n[i] = 0;
-	}
-}
-
-slice_s LevelGeneratorStatic::getSlice(int layer)
-{
-	n[layer]++;
-	if(n[layer] == 1) return first_slice;
-	return test_slice[layer];
-}
 
 //////////////////////////
 // LEVELGENERATORRANDOM //
@@ -454,12 +393,20 @@ LevelGeneratorRandom::LevelGeneratorRandom(int length):
 	markov(markov_steps, markov_length),
 	depthMap(new int[length + 1])
 {
-	reset();
+	clear();
 
 	generatePath();
 }
 
 void LevelGeneratorRandom::reset()
+{
+	for(int i = 0; i < LEVEL_NUMLAYERS; i++)
+	{
+		n[i] = 0;
+	}
+}
+
+void LevelGeneratorRandom::clear()
 {
 	for(int i = 0; i < LEVEL_NUMLAYERS; i++)
 	{
@@ -480,7 +427,7 @@ void LevelGeneratorRandom::generatePath()
 	int tries = 1;
 	do
 	{
-		reset();
+		clear();
 		path.push_back(glm::ivec3(LEVEL_WIDTH / 2, LEVEL_WIDTH / 2, 0));
 
 		int stuckCounter = 0;
@@ -531,11 +478,11 @@ void LevelGeneratorRandom::generatePathStep()
 	}
 }
 
-slice_s LevelGeneratorRandom::getSlice(int layer)
+bool LevelGeneratorRandom::getSlice(int layer, slice_s& out)
 {
 	int depth = n[layer];
 
-	if(depth >= length) return first_slice;
+	if(depth >= length) return false;
 
 	int index = depthMap[depth];
 
@@ -560,36 +507,11 @@ slice_s LevelGeneratorRandom::getSlice(int layer)
 		constraints.getConstraint(index, c);
 	}
 
-	// if(depth > 0)
-	// {
-	// 	if(layer == 0)
-	// 	{
-	// 		bool independent = true;
-	// 		for(int i = 0; i < LEVEL_WIDTH; i++)
-	// 		{
-	// 			for(int j = 0; j < LEVEL_WIDTH; j++)
-	// 			{
-	// 				if(!CUBEPROPERTY_IS_EMPTY(previous_slice[layer].data[i][j]) && !CUBEPROPERTY_IS_EMPTY(ret.data[i][j]))
-	// 				{
-	// 					independent = false;
-	// 					break;
-	// 				}
-	// 			}
-	// 		}
-	// 		if(independent) orientations[layer] = rand() % 4;
-	// 	}else{
-	// 		orientations[layer] = rand() % 4;
-	// 	}
-	// }
+	rotateSlice(&out, &ret, constraints.getLayerSliceOrientation(layer, depth));
 
-	slice_s ret2 = ret;
-
-	rotateSlice(&ret2, &ret, constraints.getLayerSliceOrientation(layer, depth));
-
-	previous_slice[layer] = ret;
 	n[layer]++;
 
-	return ret2;
+	return true;
 }
 
 ConstraintManager::ConstraintManager()

@@ -4,17 +4,12 @@
 #include "input.h"
 
 Player::Player():
-	position(0.0f, 0.0f, 0.0f),
-	direction(1.0f, 0.0f, 0.0f),
-	rotation(false),
-	progress(0.0f),
-	target_progress(1.0f),
-	state(PLAYER_NEWLYIDLE),
 	cube(1),
 	cube_outline(1, 1, true),
-	path(PLAYER_PATHLENGTH),
-	type(0)
+	path(PLAYER_PATHLENGTH)
 {
+	reset();
+
 	cube.setColor(0, glm::vec3(255.0f, 174.0f, 68.0f) * (1.4f / 255), true);
 
 	last_position = position;
@@ -32,10 +27,22 @@ Player::Player():
 	outline_lighting.setLightFresnel(0, 0.0f, 0.0f, 0.0f, 0.0f);
 }
 
+void Player::reset()
+{
+	position = glm::vec3(0.0f, 0.0f, 0.0f);
+	direction = glm::vec3(1.0f, 0.0f, 0.0f);
+	rotation = false;
+	progress = 0.0f;
+	target_progress = 1.0f;
+	state = PLAYER_NEWLYIDLE;
+	type = 0;
+	moves.clear();
+}
+
 void Player::setNextMove(glm::vec3 _direction)
 {
 	if(glm::length(_direction) < 0.001f) return;
-	moves.push(_direction);
+	moves.push_front(_direction);
 }
 
 void Player::setType(unsigned char type)
@@ -59,7 +66,7 @@ void Player::startNextMove()
 {
 	if(moves.empty() || state == PLAYER_MOVING) return;
 
-	direction = moves.front();
+	direction = moves.back();
 
 	target_progress = M_PI / 2;
 
@@ -82,7 +89,7 @@ void Player::startNextMove()
 		rotation = true;
 	}
 
-	moves.pop();
+	moves.pop_back();
 	state = PLAYER_MOVING;
 }
 

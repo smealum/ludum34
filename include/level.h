@@ -62,6 +62,7 @@ class SliceCollection
 		void setAngle(float angle);
 		void setOrientation(int orientation);
 		void clear();
+		void reset();
 
 		void incrementBaseDepth(int v = 1);
 		
@@ -91,6 +92,8 @@ class Layer
 		bool update(float delta);
 
 		void rotate();
+
+		void clear();
 
 		void addSlice(slice_s s);
 		void popSlice();
@@ -130,6 +133,8 @@ class Level
 		bool getNextLocation(glm::vec3 p, glm::vec3& out);
 
 		void killCube(glm::vec3 p);
+
+		void reset();
 
 	private:
 		Cubes deadcubes, deadcubes_wireframe;

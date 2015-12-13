@@ -209,6 +209,14 @@ void SliceCollection::clear()
 	depth = 0;
 }
 
+void SliceCollection::reset()
+{
+	clear();
+	base_depth = 0;
+	orientation = 0;
+	angle = 0.0f;
+}
+
 void SliceCollection::mergeLayers(SliceCollection** sc, int n)
 {
 	if(!sc) return;
@@ -331,6 +339,15 @@ Layer::Layer():
 
 }
 
+void Layer::clear()
+{
+	slices.reset();
+	state = LAYER_IDLE;
+	queued_rotation = false;
+	angle = 0.0f;
+	orientation = 0;
+}
+
 bool Layer::isCube(glm::vec3 p)
 {
 	return getCubeFullId(slices.getCubeInfo(p)) != 0;
@@ -443,7 +460,10 @@ void Level::update(float delta)
 		needUpdate = layers[i].update(delta) || needUpdate;
 		while(layers[i].slices.getNumSlices() < LEVEL_NUMSLICES)
 		{
-			addSliceLayer(i, generator.getSlice(i), false);
+			slice_s out;
+			bool ret = generator.getSlice(i, out);
+			if(!ret) break;
+			addSliceLayer(i, out, false);
 			needUpdate = true;
 		}
 	}
@@ -636,4 +656,16 @@ bool Level::isCubeLayer(int layer, glm::vec3 p)
 	_p.z -= getOffset();
 
 	return layers[layer].isCube(_p);
+}
+
+void Level::reset()
+{
+	generator.reset();
+	deadcubes.clear();
+	deadcubes_wireframe.clear();
+	slices.reset();
+	for(int i = 0; i < LEVEL_NUMLAYERS; i++)
+	{
+		layers[i].clear();
+	}
 }

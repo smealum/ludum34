@@ -28,6 +28,8 @@ Game::Game():
 
 void Game::update(float delta)
 {
+	if(!level) return;
+
 	if(Input::isKeyPressed(GLFW_KEY_T))
 	{
 		bool canRotate = player.canRotateLayer(*level, layer);
@@ -50,6 +52,11 @@ void Game::update(float delta)
 		hud.updateSelectedLayer(layer);
 	}
 
+	if(Input::isKeyPressed(GLFW_KEY_O))
+	{
+		resetLevel();
+	}
+
 	level->update(delta);
 	player.update(*level, delta);
 	player.updateCamera(camera);
@@ -57,6 +64,8 @@ void Game::update(float delta)
 
 void Game::draw()
 {
+	if(!level) return;
+
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	level->draw(camera, lighting, false);
@@ -76,5 +85,8 @@ void Game::loadLevel(LevelGenerator& lg)
 
 void Game::resetLevel()
 {
+	if(!level) return;
 
+	level->reset();
+	player.reset();
 }
