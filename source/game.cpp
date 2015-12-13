@@ -57,8 +57,21 @@ void Game::update(float delta)
 				level->finishIntro();
 			}
 			break;
+		case GAME_PLAYING:
+			if(level->isEndPosition(player.getPosition()))
+			{
+				state = GAME_OUTRO;
+				player.startOutro();
+				level->startOutro();
+			}
+			break;
 		default:
 			break;
+	}
+
+	if(Input::isKeyPressed(GLFW_KEY_Y))
+	{
+		level->startOutro();
 	}
 
 	if(Input::isKeyPressed(GLFW_KEY_R))

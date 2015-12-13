@@ -46,6 +46,14 @@ void Player::finishIntro()
 	}
 }
 
+void Player::startOutro()
+{
+	if(state != PLAYER_OUTRO)
+	{
+		state = PLAYER_OUTRO;
+	}
+}
+
 void Player::setNextMove(glm::vec3 _direction)
 {
 	if(glm::length(_direction) < 0.001f) return;
@@ -213,6 +221,8 @@ void Player::update(Level& level, float delta)
 						level.popSlice();
 					}
 				}
+				break;
+			default:
 				break;
 		}
 	}while(old_state != state && state != PLAYER_MOVING);

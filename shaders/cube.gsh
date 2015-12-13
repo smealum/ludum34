@@ -38,7 +38,7 @@ void main() {
 	pos += floatiness * sin(t + pos.z) * vec3(0.0, 0.1, 0.0);
 	if(vin[0].fall_time > 0.0001)
 	{
-		float f = (t - vin[0].fall_time);
+		float f = max(t - vin[0].fall_time, 0.0);
 		vec3 fall_component = vec3(0.0, -1.0, 0.0) * f * f * 4.0;
 		if(fall_component.y < -30.0f) return;
 		pos += fall_component;

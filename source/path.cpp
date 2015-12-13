@@ -12,7 +12,7 @@ Path::Path(unsigned int length):
 
 	glGenBuffers(1, &vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, length * sizeof(slab_s), data, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, length * sizeof(slab_s), data, GL_DYNAMIC_DRAW);
 
 	shader.setBuffers(vao, vbo, -1);
 	shader.use();
@@ -33,7 +33,7 @@ void Path::initAnimation()
 void Path::updateGeometry()
 {
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, cur_length * sizeof(slab_s), data, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, cur_length * sizeof(slab_s), data, GL_DYNAMIC_DRAW);
 }
 
 void Path::generate(Level& level, glm::vec3 start)

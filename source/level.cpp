@@ -501,6 +501,25 @@ void Level::finishIntro()
 	}
 }
 
+void Level::startOutro()
+{
+	if(state != LEVEL_OUTRO)
+	{
+		state = LEVEL_OUTRO;
+		setOutro();
+	}
+}
+
+void Level::setOutro()
+{
+	for(int i = 0; i < SC_NUMCUBES; i++)
+	{
+		slices.cubes.setOutro(i, true);
+		slices.cubes_wireframe.setOutro(i, true);
+	}
+}
+
+
 void Level::killCube(glm::vec3 p)
 {
 	unsigned char cube_info = getCubeInfo(p);
@@ -710,4 +729,9 @@ void Level::clearIntro()
 		slices.cubes.clearIntro(i, true);
 		slices.cubes_wireframe.clearIntro(i, true);
 	}
+}
+
+bool Level::isEndPosition(glm::vec3 p)
+{
+	return p.z >= slices.getNumSlices() + slices.getBaseDepth();
 }

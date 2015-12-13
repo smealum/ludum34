@@ -25,6 +25,7 @@ class Cubes
 		void setPosition(int i, glm::vec3 p, bool update = false);
 		void setColor(int i, glm::vec3 c, bool update = false);
 		void setIntro(int i, bool update = false);
+		void setOutro(int i, bool update = false);
 		void setFalling(int i, bool update = false);
 		void setFloatiness(float floatiness);
 		void clearIntro(int i, bool update = false);
@@ -45,6 +46,7 @@ class Cubes
 		GLuint vao, vbo;
 		float floatiness;
 		bool wireframe;
+		float max_depth;
 };
 
 #endif

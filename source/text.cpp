@@ -54,7 +54,7 @@ void Text::update(const char* string)
 	strncpy(data, string, buffer_length);
 
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, buffer_length * sizeof(char), data, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, buffer_length * sizeof(char), data, GL_DYNAMIC_DRAW);
 
 	string_length = strlen(string);
 	if(buffer_length < string_length) string_length = buffer_length;

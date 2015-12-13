@@ -137,6 +137,8 @@ class Level
 		void setIntro();
 		void clearIntro();
 		void finishIntro();
+		void startOutro();
+		void setOutro();
 
 		bool isCubeLayer(int layer, glm::vec3 p);
 		unsigned char getCubeInfo(glm::vec3 p);
@@ -147,6 +149,8 @@ class Level
 		void killCube(glm::vec3 p);
 
 		void reset();
+
+		bool isEndPosition(glm::vec3 p);
 
 	private:
 		levelState_t state;

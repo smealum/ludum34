@@ -9,7 +9,8 @@ Cubes::Cubes(int n, int _current_n, bool wireframe):
 	data(new cube_s[n]),
 	shader(ShaderProgram::loadFromFile("shaders/cube.vsh", "shaders/simple.fsh", wireframe ? "shaders/cubes_wireframe.gsh" : "shaders/cube.gsh", wireframe ? "cube_wireframe" : "cube")),
 	floatiness(1.0f),
-	wireframe(wireframe)
+	wireframe(wireframe),
+	max_depth(0.0f)
 {
 	if(_current_n < 0) current_n = n;
 	else current_n = _current_n;
@@ -26,7 +27,7 @@ Cubes::Cubes(int n, int _current_n, bool wireframe):
 
 	glGenBuffers(1, &vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, n * sizeof(cube_s), data, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, n * sizeof(cube_s), data, GL_DYNAMIC_DRAW);
 
 	shader.setBuffers(vao, vbo, -1);
 	shader.use();
@@ -60,6 +61,9 @@ int Cubes::addCube(glm::vec3 p, glm::vec3 c, bool update)
 	int id = current_n;
 
 	current_n++;
+
+	// only works if we keep growing
+	if(p.z > max_depth) max_depth = p.z;
 
 	setPosition(id, p);
 	setColor(id, c);
@@ -117,7 +121,7 @@ void Cubes::update()
 {
 	glBindVertexArray(vao);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, current_n * sizeof(cube_s), data, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, current_n * sizeof(cube_s), data, GL_DYNAMIC_DRAW);
 }
 
 void Cubes::setPosition(int i, glm::vec3 p, bool update)
@@ -143,6 +147,15 @@ void Cubes::setFalling(int i, bool update)
 	if(i >= current_n) return;
 
 	data[i].fall_time = glfwGetTime();
+
+	if(update) this->update();
+}
+
+void Cubes::setOutro(int i, bool update)
+{
+	if(i >= current_n) return;
+
+	data[i].fall_time = glfwGetTime() + (max_depth - data[i].position.z) * 0.1f;
 
 	if(update) this->update();
 }
