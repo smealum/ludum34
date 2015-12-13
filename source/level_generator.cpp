@@ -1,5 +1,6 @@
 #include <iostream>
 #include <algorithm>
+#include <time.h>
 #include "level_generator.h"
 #include "level.h"
 
@@ -248,7 +249,7 @@ class PathStepTypeBelowLeft : public PathStepType
 			bool ret;
 			if(position.x >= LEVEL_WIDTH - 1) return false;
 			// TODO : random height
-			if(position.y <= 0) return false;
+			if(position.y <= 1) return false;
 			out = position + glm::ivec3(1, -1, 0);
 
 			ret = constraints.instanceConstraint((pathConstraint_s){position + glm::ivec3(0, -1, 0), CUBEPROPERTY_DIRECTION(CUBEPROPERTY_DIRECTION_LEFT), false});
@@ -276,7 +277,7 @@ class PathStepTypeBelowRight : public PathStepType
 			bool ret;
 			if(position.x <= 0) return false;
 			// TODO : random height
-			if(position.y <= 0) return false;
+			if(position.y <= 1) return false;
 			out = position + glm::ivec3(-1, -1, 0);
 
 			ret = constraints.instanceConstraint((pathConstraint_s){position + glm::ivec3(0, -1, 0), CUBEPROPERTY_DIRECTION(CUBEPROPERTY_DIRECTION_RIGHT), false});
@@ -303,7 +304,7 @@ class PathStepTypeBelowForward : public PathStepType
 		{
 			bool ret;
 			// TODO : random height
-			if(position.y <= 0) return false;
+			if(position.y <= 1) return false;
 			out = position + glm::ivec3(0, -1, 1);
 
 			ret = constraints.instanceConstraint((pathConstraint_s){position + glm::ivec3(0, -1, 0), CUBEPROPERTY_DIRECTION(CUBEPROPERTY_DIRECTION_FORWARD), false});
@@ -345,6 +346,8 @@ Markov::Markov(pathStepRandom_s* steps, int length):
 	total_weights(0),
 	mt(rd())
 {
+	mt.seed(time(NULL));
+
 	for(int i = 0; i < length; i++)
 	{
 		total_weights += steps[i].weight;
@@ -353,7 +356,7 @@ Markov::Markov(pathStepRandom_s* steps, int length):
 	dist = std::uniform_real_distribution<float>(0.0, total_weights);
 }
 
-glm::ivec3 Markov::getStep(glm::ivec3 position, ConstraintManager& constraints)
+bool Markov::getStep(glm::ivec3 position, ConstraintManager& constraints, glm::ivec3& out)
 {
 	bool rejected[length];
 	int num_rejections = 0;
@@ -373,10 +376,9 @@ glm::ivec3 Markov::getStep(glm::ivec3 position, ConstraintManager& constraints)
 				t += steps[i].weight;
 				if(v < t)
 				{
-					glm::ivec3 out;
 					bool ret = steps[i].stepper->getStep(position, out, constraints);
 					
-					if(ret) return out;
+					if(ret) return true;
 
 					_total_weights -= steps[i].weight;
 					
@@ -388,13 +390,20 @@ glm::ivec3 Markov::getStep(glm::ivec3 position, ConstraintManager& constraints)
 		}
 	}
 
-	return position;
+	return false;
 }
 
 LevelGeneratorRandom::LevelGeneratorRandom(int length):
 	length(length),
 	markov(markov_steps, markov_length),
 	depthMap(new int[length + 1])
+{
+	reset();
+
+	generatePath();
+}
+
+void LevelGeneratorRandom::reset()
 {
 	for(int i = 0; i < LEVEL_NUMLAYERS; i++)
 	{
@@ -406,19 +415,35 @@ LevelGeneratorRandom::LevelGeneratorRandom(int length):
 		depthMap[i] = 0;
 	}
 
-	generatePath();
+	path.clear();
+	constraints.reset();
 }
-
-bool constraintCompare (pathConstraint_s i, pathConstraint_s j) { return (i.position.z < j.position.z); }
 
 void LevelGeneratorRandom::generatePath()
 {
-	path.push_back(glm::ivec3(LEVEL_WIDTH / 2, LEVEL_WIDTH / 2, 0));
-
-	while(path.back().z < length)
+	int tries = 1;
+	do
 	{
-		generatePathStep();
-	}
+		reset();
+		path.push_back(glm::ivec3(LEVEL_WIDTH / 2, LEVEL_WIDTH / 2, 0));
+
+		int stuckCounter = 0;
+		int cur_depth = 0, cur_depth_cnt = 0;
+		while(path.back().z < length && stuckCounter < 5)
+		{
+			unsigned int s = path.size();
+			generatePathStep();
+			if(cur_depth != path.back().z)
+			{
+				cur_depth = path.back().z;
+				cur_depth_cnt = 0;
+			}else cur_depth_cnt++;
+			if(path.size() == s || cur_depth_cnt > LEVEL_WIDTH) stuckCounter++;
+			printf("length %d\n", (int)path.size());
+		}
+		printf("%d tries", tries);
+		tries++;
+	}while(path.back().z < length);
 
 	constraints.sort();
 
@@ -442,7 +467,12 @@ void LevelGeneratorRandom::generatePath()
 
 void LevelGeneratorRandom::generatePathStep()
 {
-	path.push_back(markov.getStep(path.back(), constraints));
+	glm::ivec3 out;
+	if(markov.getStep(path.back(), constraints, out))
+	{
+		std::cout << glm::to_string(out) << std::endl;
+		path.push_back(out);
+	}
 }
 
 slice_s LevelGeneratorRandom::getSlice(int layer)
@@ -469,7 +499,7 @@ slice_s LevelGeneratorRandom::getSlice(int layer)
 			cubePropertyDirection_t dir = CUBEPROPERTY_GET_DIRECTION(c.properties);
 			bool climbable = CUBEPROPERTY_GET_CLIMBABLE(c.properties);
 			
-			std::cout << glm::to_string(p) << " " << c.empty << " " << c.properties << std::endl;
+			// std::cout << glm::to_string(p) << " " << c.empty << " " << c.properties << std::endl;
 
 			if(!climbable)
 			{
@@ -479,7 +509,6 @@ slice_s LevelGeneratorRandom::getSlice(int layer)
 				if(layer == 1) v |= (2 << 4);
 				else if(layer == 2) v |= (3 << 4);
 			}
-
 
 			if((v == 0 && layer == 0)
 				|| (v == (2 << 4) && layer == 1)
@@ -503,6 +532,13 @@ slice_s LevelGeneratorRandom::getSlice(int layer)
 ConstraintManager::ConstraintManager()
 {
 
+}
+
+void ConstraintManager::reset()
+{
+	instanced_data.clear();
+	data.clear();
+	dataMap.clear();
 }
 
 bool ConstraintManager::doesConstraintConflict(pathConstraint_s constraint)

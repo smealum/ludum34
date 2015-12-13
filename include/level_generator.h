@@ -52,6 +52,8 @@ class ConstraintManager
 	public:
 		ConstraintManager();
 
+		void reset();
+
 		pathConstraint_s mergeConstraints(pathConstraint_s constraint);
 		bool doesConstraintConflict(pathConstraint_s constraint);
 		bool instanceConstraint(pathConstraint_s constraint);
@@ -91,7 +93,7 @@ class Markov
 	public:
 		Markov(pathStepRandom_s* steps, int length);
 
-		glm::ivec3 getStep(glm::ivec3 position, ConstraintManager& constraints);
+		bool getStep(glm::ivec3 position, ConstraintManager& constraints, glm::ivec3& out);
 
 	private:
 		pathStepRandom_s* steps;
@@ -109,6 +111,8 @@ class LevelGeneratorRandom : public LevelGenerator
 		virtual slice_s getSlice(int layer);
 		void generatePath();
 		void generatePathStep();
+
+		void reset();
 
 	private:
 		int n[LEVEL_NUMLAYERS];
