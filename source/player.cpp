@@ -151,6 +151,11 @@ void Player::doStep(Level& level)
 	}
 }
 
+void Player::updatePath(Level& level)
+{
+	path.generate(level, getPosition());
+}
+
 void Player::update(Level& level, float delta)
 {
 	playerState_t old_state;
@@ -183,7 +188,7 @@ void Player::update(Level& level, float delta)
 						setType(getCubeWireframeId(cube_type));
 					}
 
-					path.generate(level, getPosition());
+					updatePath(level);
 
 					state = PLAYER_IDLE;
 				}
@@ -194,7 +199,7 @@ void Player::update(Level& level, float delta)
 				{
 					progress = 0.0f;
 
-					level.killCube(last_position + glm::vec3(0.0f, -1.0f, 0.0f));
+					level.killCube(position + glm::vec3(0.0f, -1.0f, 0.0f));
 
 					last_position = position;
 

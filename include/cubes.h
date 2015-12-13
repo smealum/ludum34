@@ -34,7 +34,7 @@ class Cubes
 		int addCube(glm::vec3 p, glm::vec3 c, bool update = false);
 		void removeCube(int id, bool update = false);
 		void removeCube(glm::vec3 p, bool update = false);
-		void removeDepth(float depth);
+		void removeDepth(float depth, bool = false);
 
 		glm::mat4 model;
 

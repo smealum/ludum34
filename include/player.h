@@ -32,6 +32,7 @@ class Player
 		void doStep(Level& level);
 
 		void setType(unsigned char type);
+		void updatePath(Level& level);
 
 		bool canRotateLayer(Level& level, int layer);
 

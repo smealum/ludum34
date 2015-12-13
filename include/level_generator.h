@@ -7,6 +7,8 @@
 #include "slices.h"
 #include "glm.h"
 
+#define NUM_MARKOVSTEPS (9)
+
 class LevelGenerator
 {
 	public:
@@ -96,6 +98,9 @@ class Markov
 	public:
 		Markov(pathStepRandom_s* steps, int length);
 
+		
+		void updateWeights(float* weights, int n);
+
 		bool getStep(glm::ivec3 position, ConstraintManager& constraints, glm::ivec3& out);
 
 	private:
@@ -106,10 +111,25 @@ class Markov
 		std::uniform_real_distribution<float> dist;
 };
 
+typedef struct
+{
+	int length;
+	float markovWeights[NUM_MARKOVSTEPS];
+}difficultyLevel_s;
+
+typedef enum
+{
+	RANDOM_DIFFICULTY_STRAIGHT_LINE,
+	RANDOM_DIFFICULTY_VERY_EASY,
+	RANDOM_DIFFICULTY_EASY,
+	RANDOM_DIFFICULTY_MEDIUM,
+	RANDOM_DIFFICULTY_HARD,
+}difficultyLevel_t;
+
 class LevelGeneratorRandom : public LevelGenerator
 {
 	public:
-		LevelGeneratorRandom(int length);
+		LevelGeneratorRandom(difficultyLevel_t difficulty = RANDOM_DIFFICULTY_HARD);
 
 		virtual bool getSlice(int layer, slice_s& out);
 		void generatePath();
@@ -126,6 +146,7 @@ class LevelGeneratorRandom : public LevelGenerator
 		ConstraintManager constraints;
 		Markov markov;
 		int* depthMap;
+		difficultyLevel_t difficulty;
 };
 
 #endif

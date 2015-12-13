@@ -73,7 +73,11 @@ void Game::update(float delta)
 		resetLevel();
 	}
 
-	level->update(delta);
+	if(level->update(delta))
+	{
+		// level geometry got updated !
+		player.updatePath(*level);
+	}
 	player.update(*level, delta);
 	player.updateCamera(camera);
 }

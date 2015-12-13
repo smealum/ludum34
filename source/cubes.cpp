@@ -1,3 +1,4 @@
+#include <iostream>
 #include "cubes.h"
 
 static Lighting wireframe_lighting;
@@ -62,6 +63,7 @@ int Cubes::addCube(glm::vec3 p, glm::vec3 c, bool update)
 
 	setPosition(id, p);
 	setColor(id, c);
+	data[id].fall_time = 0.0;
 
 	if(update) this->update();
 
@@ -72,8 +74,7 @@ void Cubes::removeCube(int id, bool update)
 {
 	if(id >= current_n) return;
 
-	setPosition(id, data[current_n - 1].position);
-	setColor(id, data[current_n - 1].color);
+	data[id] = data[current_n - 1];
 
 	current_n--;
 
@@ -95,7 +96,7 @@ void Cubes::removeCube(glm::vec3 p, bool update)
 	}
 }
 
-void Cubes::removeDepth(float depth)
+void Cubes::removeDepth(float depth, bool update)
 {
 	for(int i = 0; i < current_n;)
 	{
@@ -108,6 +109,8 @@ void Cubes::removeDepth(float depth)
 			i++;
 		}
 	}
+
+	if(update) this->update();
 }
 
 void Cubes::update()

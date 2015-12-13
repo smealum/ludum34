@@ -126,7 +126,7 @@ class Level
 
 		void rotateLayer(int l);
 
-		void update(float delta);
+		bool update(float delta);
 		void updateGeometry();
 
 		void addSliceLayer(int l, slice_s s, bool update = true);

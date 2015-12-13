@@ -32,7 +32,9 @@ int main(void)
 	glDepthFunc(GL_LESS);
 
 	Game game;
-	LevelGeneratorRandom levelGenerator_random(32);
+	// LevelGeneratorRandom levelGenerator_random(RANDOM_DIFFICULTY_VERY_EASY);
+	// LevelGeneratorRandom levelGenerator_random(RANDOM_DIFFICULTY_STRAIGHT_LINE);
+	LevelGeneratorRandom levelGenerator_random(RANDOM_DIFFICULTY_HARD);
 
 	game.loadLevel(levelGenerator_random);
 

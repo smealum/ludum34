@@ -333,6 +333,102 @@ static pathStepRandom_s markov_steps[] =
 static const int markov_length = sizeof(markov_steps) / sizeof(pathStepRandom_s);
 static std::random_device rd;
 
+difficultyLevel_s difficultyLevels[] =
+{
+	// RANDOM_DIFFICULTY_STRAIGHT_LINE
+	(difficultyLevel_s)
+	{
+		// length
+		16,
+		// markovWeights
+		{
+			1.0f, // Forward
+			0.0f, // Left
+			0.0f, // Right
+			0.0f, // AboveLeft
+			0.0f, // AboveRight
+			0.0f, // AboveForward
+			0.0f, // BelowLeft
+			0.0f, // BelowRight
+			0.0f  // BelowForward
+		}, 
+	},
+	// RANDOM_DIFFICULTY_VERY_EASY
+	(difficultyLevel_s)
+	{
+		// length
+		16,
+		// markovWeights
+		{
+			6.0f, // Forward
+			1.0f, // Left
+			1.0f, // Right
+			0.0f, // AboveLeft
+			0.0f, // AboveRight
+			0.0f, // AboveForward
+			0.0f, // BelowLeft
+			0.0f, // BelowRight
+			0.0f  // BelowForward
+		}, 
+	},
+	// RANDOM_DIFFICULTY_EASY
+	(difficultyLevel_s)
+	{
+		// length
+		16,
+		// markovWeights
+		{
+			3.0f, // Forward
+			1.0f, // Left
+			1.0f, // Right
+			0.0f, // AboveLeft
+			0.0f, // AboveRight
+			0.0f, // AboveForward
+			0.0f, // BelowLeft
+			0.0f, // BelowRight
+			0.0f  // BelowForward
+		}, 
+	},
+	// RANDOM_DIFFICULTY_MEDIUM
+	(difficultyLevel_s)
+	{
+		// length
+		24,
+		// markovWeights
+		{
+			1.0f, // Forward
+			1.0f, // Left
+			1.0f, // Right
+			0.0f, // AboveLeft
+			0.0f, // AboveRight
+			0.0f, // AboveForward
+			1.0f, // BelowLeft
+			1.0f, // BelowRight
+			1.0f  // BelowForward
+		}, 
+	},
+	// RANDOM_DIFFICULTY_HARD
+	(difficultyLevel_s)
+	{
+		// length
+		32,
+		// markovWeights
+		{
+			1.0f, // Forward
+			1.0f, // Left
+			1.0f, // Right
+			1.0f, // AboveLeft
+			1.0f, // AboveRight
+			1.0f, // AboveForward
+			1.0f, // BelowLeft
+			1.0f, // BelowRight
+			1.0f  // BelowForward
+		},
+	},
+};
+
+static const int num_difficulty_levels = sizeof(difficultyLevels) / sizeof(difficultyLevel_s);
+
 Markov::Markov(pathStepRandom_s* steps, int length):
 	steps(steps),
 	length(length),
@@ -341,12 +437,26 @@ Markov::Markov(pathStepRandom_s* steps, int length):
 {
 	mt.seed(time(NULL));
 
+	updateWeights(NULL, 0);
+
+	dist = std::uniform_real_distribution<float>(0.0, total_weights);
+}
+
+void Markov::updateWeights(float* weights, int n)
+{
+	if(!weights && n) return;
+
+	if(n > length) n = length;
+
+	for(int i = 0; i < n; i++)
+	{
+		steps[i].weight = weights[i];
+	}
+
 	for(int i = 0; i < length; i++)
 	{
 		total_weights += steps[i].weight;
 	}
-
-	dist = std::uniform_real_distribution<float>(0.0, total_weights);
 }
 
 bool Markov::getStep(glm::ivec3 position, ConstraintManager& constraints, glm::ivec3& out)
@@ -388,11 +498,14 @@ bool Markov::getStep(glm::ivec3 position, ConstraintManager& constraints, glm::i
 	return false;
 }
 
-LevelGeneratorRandom::LevelGeneratorRandom(int length):
-	length(length),
+LevelGeneratorRandom::LevelGeneratorRandom(difficultyLevel_t difficulty):
+	length(difficultyLevels[difficulty].length),
 	markov(markov_steps, markov_length),
-	depthMap(new int[length + 1])
+	depthMap(new int[length + 1]),
+	difficulty(difficulty)
 {
+	markov.updateWeights(difficultyLevels[difficulty].markovWeights, NUM_MARKOVSTEPS);
+
 	clear();
 
 	generatePath();

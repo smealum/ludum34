@@ -111,8 +111,8 @@ void SliceCollection::popSlice()
 {
 	int slice_depth = depth - data.size();
 
-	cubes.removeDepth(float(slice_depth));
-	cubes_wireframe.removeDepth(float(slice_depth));
+	cubes.removeDepth(float(slice_depth), true);
+	cubes_wireframe.removeDepth(float(slice_depth), true);
 
 	data.pop_front();
 }
@@ -443,9 +443,12 @@ void Level::draw(Camera& camera, Lighting& lighting, bool wireframe)
 
 	slices.draw(camera, lighting, wireframe);
 
+	// printf("dead %d\n", deadcubes.current_n);
+
 	if(!wireframe)
 	{
-		deadcubes.model = glm::rotate(glm::mat4(1.0f), 0.0f, glm::vec3(0.0f, 0.0f, 1.0f)) * glm::translate(glm::mat4(1.0f), glm::vec3(-LEVEL_WIDTH / 2, -LEVEL_WIDTH / 2, 0.0f));
+		// deadcubes.model = glm::translate(glm::mat4(1.0f), glm::vec3(-LEVEL_WIDTH / 2, -LEVEL_WIDTH / 2, 0.0f));
+		deadcubes.model = glm::translate(glm::mat4(1.0f), glm::vec3(-LEVEL_WIDTH / 2, -LEVEL_WIDTH / 2, 0.0f));
 		deadcubes.draw(camera, lighting);
 	}else{
 		deadcubes_wireframe.model = deadcubes.model;
@@ -453,7 +456,7 @@ void Level::draw(Camera& camera, Lighting& lighting, bool wireframe)
 	}
 }
 
-void Level::update(float delta)
+bool Level::update(float delta)
 {
 	bool needUpdate = false;
 	for(int i = 0; i < LEVEL_NUMLAYERS; i++)
@@ -485,6 +488,8 @@ void Level::update(float delta)
 		default:
 			break;
 	}
+
+	return needUpdate;
 }
 
 void Level::finishIntro()
@@ -506,10 +511,11 @@ void Level::killCube(glm::vec3 p)
 
 		_p.x += LEVEL_WIDTH / 2;
 		_p.y += LEVEL_WIDTH / 2;
-		_p.z -= getOffset();
 
 		addCube(deadcubes, deadcubes_wireframe, _p, cube_info, true);
 		
+		_p.z -= getOffset();
+
 		deadcubes.update();
 		deadcubes_wireframe.update();
 
@@ -564,6 +570,11 @@ void Level::popSlice(bool update)
 	{
 		layers[i].popSlice();
 	}
+
+	int slice_depth = getOffset();
+
+	deadcubes.removeDepth(float(slice_depth), true);
+	deadcubes_wireframe.removeDepth(float(slice_depth), true);
 
 	slices.incrementBaseDepth();
 
