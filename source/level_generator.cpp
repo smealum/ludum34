@@ -107,6 +107,12 @@ class PathStepTypeForward : public PathStepType
 
 			return true;
 		}
+
+		virtual const char* getName()
+		{
+			static const char* name = "Forward";
+			return name;
+		}
 };
 
 class PathStepTypeLeft : public PathStepType
@@ -122,7 +128,7 @@ class PathStepTypeLeft : public PathStepType
 			if(ret) {constraints.clearInstancedConstraints(); return false;}
 			ret = constraints.instanceConstraint((pathConstraint_s){position + glm::ivec3(0, 0, 0), 0, true});
 			if(ret) {constraints.clearInstancedConstraints(); return false;}
-			ret = constraints.instanceConstraint((pathConstraint_s){position + glm::ivec3(1, -1, 0), CUBEPROPERTY_DIRECTION(CUBEPROPERTY_DIRECTION_ANY), false});
+			ret = constraints.instanceConstraint((pathConstraint_s){position + glm::ivec3(1, -1, 0), CUBEPROPERTY_DIRECTION(CUBEPROPERTY_DIRECTION_ANY) | CUBEPROPERTY_NOT_DIRECTION(CUBEPROPERTY_DIRECTION_RIGHT), false});
 			if(ret) {constraints.clearInstancedConstraints(); return false;}
 			ret = constraints.instanceConstraint((pathConstraint_s){position + glm::ivec3(1, 0, 0), 0, true});
 			if(ret) {constraints.clearInstancedConstraints(); return false;}
@@ -130,6 +136,12 @@ class PathStepTypeLeft : public PathStepType
 			constraints.flushInstancedConstraints();
 
 			return true;
+		}
+
+		virtual const char* getName()
+		{
+			static const char* name = "Left";
+			return name;
 		}
 };
 
@@ -147,7 +159,7 @@ class PathStepTypeRight : public PathStepType
 			if(ret) {constraints.clearInstancedConstraints(); return false;}
 			ret = constraints.instanceConstraint((pathConstraint_s){position + glm::ivec3(0, 0, 0), 0, true});
 			if(ret) {constraints.clearInstancedConstraints(); return false;}
-			ret = constraints.instanceConstraint((pathConstraint_s){position + glm::ivec3(-1, -1, 0), CUBEPROPERTY_DIRECTION(CUBEPROPERTY_DIRECTION_ANY), false});
+			ret = constraints.instanceConstraint((pathConstraint_s){position + glm::ivec3(-1, -1, 0), CUBEPROPERTY_DIRECTION(CUBEPROPERTY_DIRECTION_ANY) | CUBEPROPERTY_NOT_DIRECTION(CUBEPROPERTY_DIRECTION_LEFT), false});
 			if(ret) {constraints.clearInstancedConstraints(); return false;}
 			ret = constraints.instanceConstraint((pathConstraint_s){position + glm::ivec3(-1, 0, 0), 0, true});
 			if(ret) {constraints.clearInstancedConstraints(); return false;}
@@ -155,6 +167,12 @@ class PathStepTypeRight : public PathStepType
 			constraints.flushInstancedConstraints();
 
 			return true;
+		}
+
+		virtual const char* getName()
+		{
+			static const char* name = "Right";
+			return name;
 		}
 };
 
@@ -184,6 +202,12 @@ class PathStepTypeAboveLeft : public PathStepType
 
 			return true;
 		}
+
+		virtual const char* getName()
+		{
+			static const char* name = "AboveLeft";
+			return name;
+		}
 };
 
 class PathStepTypeAboveRight : public PathStepType
@@ -212,6 +236,12 @@ class PathStepTypeAboveRight : public PathStepType
 
 			return true;
 		}
+
+		virtual const char* getName()
+		{
+			static const char* name = "AboveRight";
+			return name;
+		}
 };
 
 class PathStepTypeAboveForward : public PathStepType
@@ -238,6 +268,12 @@ class PathStepTypeAboveForward : public PathStepType
 			constraints.flushInstancedConstraints();
 
 			return true;
+		}
+
+		virtual const char* getName()
+		{
+			static const char* name = "AboveForward";
+			return name;
 		}
 };
 
@@ -267,6 +303,12 @@ class PathStepTypeBelowLeft : public PathStepType
 
 			return true;
 		}
+
+		virtual const char* getName()
+		{
+			static const char* name = "BelowLeft";
+			return name;
+		}
 };
 
 class PathStepTypeBelowRight : public PathStepType
@@ -295,6 +337,12 @@ class PathStepTypeBelowRight : public PathStepType
 
 			return true;
 		}
+
+		virtual const char* getName()
+		{
+			static const char* name = "BelowRight";
+			return name;
+		}
 };
 
 class PathStepTypeBelowForward : public PathStepType
@@ -322,6 +370,12 @@ class PathStepTypeBelowForward : public PathStepType
 
 			return true;
 		}
+
+		virtual const char* getName()
+		{
+			static const char* name = "BelowForward";
+			return name;
+		}
 };
 
 static pathStepRandom_s markov_steps[] =
@@ -329,15 +383,16 @@ static pathStepRandom_s markov_steps[] =
 	(pathStepRandom_s) {1.0f, new PathStepTypeForward()},
 	(pathStepRandom_s) {1.0f, new PathStepTypeLeft()},
 	(pathStepRandom_s) {1.0f, new PathStepTypeRight()},
-	(pathStepRandom_s) {1.0f, new PathStepTypeAboveLeft()},
-	(pathStepRandom_s) {1.0f, new PathStepTypeAboveRight()},
-	(pathStepRandom_s) {1.0f, new PathStepTypeAboveForward()},
-	(pathStepRandom_s) {1.0f, new PathStepTypeBelowLeft()},
-	(pathStepRandom_s) {1.0f, new PathStepTypeBelowRight()},
-	(pathStepRandom_s) {1.0f, new PathStepTypeBelowForward()},
+	(pathStepRandom_s) {0.0f, new PathStepTypeAboveLeft()},
+	(pathStepRandom_s) {0.0f, new PathStepTypeAboveRight()},
+	(pathStepRandom_s) {0.0f, new PathStepTypeAboveForward()},
+	(pathStepRandom_s) {0.0f, new PathStepTypeBelowLeft()},
+	(pathStepRandom_s) {0.0f, new PathStepTypeBelowRight()},
+	(pathStepRandom_s) {0.0f, new PathStepTypeBelowForward()},
 };
 
-static const int markov_length = sizeof(markov_steps) / sizeof(pathStepRandom_s);
+// static const int markov_length = sizeof(markov_steps) / sizeof(pathStepRandom_s);
+static const int markov_length = 3;
 static std::random_device rd;
 
 Markov::Markov(pathStepRandom_s* steps, int length):
@@ -377,6 +432,8 @@ bool Markov::getStep(glm::ivec3 position, ConstraintManager& constraints, glm::i
 				if(v < t)
 				{
 					bool ret = steps[i].stepper->getStep(position, out, constraints);
+
+					if(ret) printf("%s\n", steps[i].stepper->getName());
 					
 					if(ret) return true;
 
@@ -439,7 +496,7 @@ void LevelGeneratorRandom::generatePath()
 				cur_depth_cnt = 0;
 			}else cur_depth_cnt++;
 			if(path.size() == s || cur_depth_cnt > LEVEL_WIDTH) stuckCounter++;
-			printf("length %d\n", (int)path.size());
+			// printf("length %d\n", (int)path.size());
 		}
 		printf("%d tries", tries);
 		tries++;
@@ -470,7 +527,7 @@ void LevelGeneratorRandom::generatePathStep()
 	glm::ivec3 out;
 	if(markov.getStep(path.back(), constraints, out))
 	{
-		std::cout << glm::to_string(out) << std::endl;
+		// std::cout << glm::to_string(out) << std::endl;
 		path.push_back(out);
 	}
 }
@@ -547,11 +604,14 @@ bool ConstraintManager::doesConstraintConflict(pathConstraint_s constraint)
 
 	pathConstraint_s _constraint = dataMap[constraint.position];
 	if(constraint.empty != _constraint.empty) return true;
+	if(constraint.empty) return false;
 
 	cubePropertyDirection_t _dir = CUBEPROPERTY_GET_DIRECTION(_constraint.properties);
 	cubePropertyDirection_t dir = CUBEPROPERTY_GET_DIRECTION(constraint.properties); 
 
-	return !(_dir == CUBEPROPERTY_DIRECTION_ANY || dir == CUBEPROPERTY_DIRECTION_ANY || _dir == dir);
+	return !(   (_dir == CUBEPROPERTY_DIRECTION_ANY || dir == CUBEPROPERTY_DIRECTION_ANY || _dir == dir)
+				&& !(dir != CUBEPROPERTY_DIRECTION_ANY && (_constraint.properties & CUBEPROPERTY_NOT_DIRECTION(dir)))
+				&& !(_dir != CUBEPROPERTY_DIRECTION_ANY && (constraint.properties & CUBEPROPERTY_NOT_DIRECTION(_dir))));
 }
 
 pathConstraint_s ConstraintManager::mergeConstraints(pathConstraint_s constraint)
@@ -561,7 +621,13 @@ pathConstraint_s ConstraintManager::mergeConstraints(pathConstraint_s constraint
 	cubePropertyDirection_t _dir = CUBEPROPERTY_GET_DIRECTION(_constraint.properties);
 	cubePropertyDirection_t dir = CUBEPROPERTY_GET_DIRECTION(constraint.properties);
 
-	if(_dir == CUBEPROPERTY_DIRECTION_ANY) _constraint.properties = (_constraint.properties & ~ CUBEPROPERTY_DIRECTION(0xFF)) | CUBEPROPERTY_DIRECTION(dir) | CUBEPROPERTY_CLIMBABLE(CUBEPROPERTY_GET_CLIMBABLE(constraint.properties));
+	if(_dir == CUBEPROPERTY_DIRECTION_ANY)
+	{
+		_constraint.properties = (_constraint.properties & ~ CUBEPROPERTY_DIRECTION(0xFF))
+								| CUBEPROPERTY_DIRECTION(dir)
+								| CUBEPROPERTY_CLIMBABLE(CUBEPROPERTY_GET_CLIMBABLE(constraint.properties))
+								| (constraint.properties & CUBEPROPERTY_NOT_DIRECTION(0xFF));
+	}
 
 	return _constraint;
 }

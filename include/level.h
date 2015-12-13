@@ -16,6 +16,7 @@
 #define CUBEPROPERTY_DIRECTION(v) (((v) & 0x7) << 8)
 #define CUBEPROPERTY_CLIMBABLE(v) (((v) & 0x1) << 11)
 #define CUBEPROPERTY_DISCRIMINATE(v) (((v) & 0x1) << 12)
+#define CUBEPROPERTY_NOT_DIRECTION(v) ((1) << (13 + ((v) & 3)))
 #define CUBEPROPERTY_OUTOFBOUNDS(v) (((v) & 0x1) << 31)
 #define CUBEPROPERTY_GET_COLOR(v) ((v) & 0xFF)
 #define CUBEPROPERTY_GET_DIRECTION(v) (cubePropertyDirection_t)(((v) >> 8) & 0x7)
