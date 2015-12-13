@@ -62,15 +62,27 @@ class ConstraintManager
 		void sort();
 		int size();
 
+		bool getConstraint(int id, pathConstraint_s& out);
+		bool getConstraint(glm::ivec3 p, pathConstraint_s& out);
+
 		// don't use this directly
 		void addConstraint(pathConstraint_s constraint);
 		void setConstraint(pathConstraint_s constraint);
-		bool getConstraint(int id, pathConstraint_s& out);
+
+		unsigned char getConstrainedCubeLayer(int layer, glm::ivec3 p);
+		unsigned char getConstrainedCubeLayer(int layer, pathConstraint_s c);
+		bool isConstrainedCubeInLayer(int layer, pathConstraint_s c);
+		bool isConstrainedCubeInLayer(int layer, glm::ivec3 p);
+
+		int getLayerSliceOrientation(int layer, int slice);
 
 	private:
 		std::vector<pathConstraint_s> instanced_data;
+		std::vector< std::vector<pathConstraint_s> > instanced_data_slice;
+		std::vector< std::vector<pathConstraint_s> > instanced_data_slice_next;
 		std::vector<pathConstraint_s*> data;
 		std::unordered_map<glm::ivec3, pathConstraint_s, KeyFuncs, KeyFuncs> dataMap;
+		std::vector<int> orientations[LEVEL_NUMLAYERS];
 };
 
 class PathStepType
@@ -117,7 +129,6 @@ class LevelGeneratorRandom : public LevelGenerator
 
 	private:
 		int n[LEVEL_NUMLAYERS];
-		int orientations[LEVEL_NUMLAYERS];
 		slice_s previous_slice[LEVEL_NUMLAYERS];
 		int length;
 		std::vector<glm::ivec3> path;

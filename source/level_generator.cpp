@@ -383,9 +383,9 @@ static pathStepRandom_s markov_steps[] =
 	(pathStepRandom_s) {1.0f, new PathStepTypeForward()},
 	(pathStepRandom_s) {1.0f, new PathStepTypeLeft()},
 	(pathStepRandom_s) {1.0f, new PathStepTypeRight()},
-	(pathStepRandom_s) {0.0f, new PathStepTypeAboveLeft()},
-	(pathStepRandom_s) {0.0f, new PathStepTypeAboveRight()},
-	(pathStepRandom_s) {0.0f, new PathStepTypeAboveForward()},
+	(pathStepRandom_s) {1.0f, new PathStepTypeAboveLeft()},
+	(pathStepRandom_s) {1.0f, new PathStepTypeAboveRight()},
+	(pathStepRandom_s) {1.0f, new PathStepTypeAboveForward()},
 	(pathStepRandom_s) {1.0f, new PathStepTypeBelowLeft()},
 	(pathStepRandom_s) {1.0f, new PathStepTypeBelowRight()},
 	(pathStepRandom_s) {1.0f, new PathStepTypeBelowForward()},
@@ -432,7 +432,7 @@ bool Markov::getStep(glm::ivec3 position, ConstraintManager& constraints, glm::i
 				{
 					bool ret = steps[i].stepper->getStep(position, out, constraints);
 
-					if(ret) printf("%s\n", steps[i].stepper->getName());
+					// if(ret) printf("%s\n", steps[i].stepper->getName());
 					
 					if(ret) return true;
 
@@ -464,7 +464,6 @@ void LevelGeneratorRandom::reset()
 	for(int i = 0; i < LEVEL_NUMLAYERS; i++)
 	{
 		n[i] = 0;
-		orientations[i] = 0;
 	}
 
 	for(int i = 0; i < length + 1; i++)
@@ -549,31 +548,16 @@ slice_s LevelGeneratorRandom::getSlice(int layer)
 	while(index < (int)constraints.size() && c.position.z == depth)
 	{
 		glm::ivec3 p = c.position;
-		
-		if(!c.empty)
+		unsigned char value = constraints.getConstrainedCubeLayer(layer, c);
+
+		if(layer == 0)
 		{
-			int v = 0;
-			cubePropertyDirection_t dir = CUBEPROPERTY_GET_DIRECTION(c.properties);
-			bool climbable = CUBEPROPERTY_GET_CLIMBABLE(c.properties);
-			
-			// std::cout << glm::to_string(p) << " " << c.empty << " " << c.properties << std::endl;
+			std::cout << glm::to_string(c.position) << ", " << (int)value << std::endl;
+		}
 
-			if(!climbable)
-			{
-				if(dir == CUBEPROPERTY_DIRECTION_LEFT) v |= (2 << 4);
-				else if(dir == CUBEPROPERTY_DIRECTION_RIGHT) v |= (3 << 4);
-			}else{
-				if(layer == 1) v |= (2 << 4);
-				else if(layer == 2) v |= (3 << 4);
-			}
-
-			if((v == 0 && layer == 0)
-				|| (v == (2 << 4) && layer == 1)
-				|| (v == (3 << 4) && layer == 2))
-			{
-				ret.data[LEVEL_WIDTH - 1 - p.y][p.x] = v | 1;
-			}
-
+		if(value != 0)
+		{
+			ret.data[LEVEL_WIDTH - 1 - p.y][p.x] = value;
 		}
 
 		index++;
@@ -581,31 +565,31 @@ slice_s LevelGeneratorRandom::getSlice(int layer)
 		constraints.getConstraint(index, c);
 	}
 
-	if(depth > 0)
-	{
-		if(layer == 0)
-		{
-			bool independent = true;
-			for(int i = 0; i < LEVEL_WIDTH; i++)
-			{
-				for(int j = 0; j < LEVEL_WIDTH; j++)
-				{
-					if(!CUBEPROPERTY_IS_EMPTY(previous_slice[layer].data[i][j]) && !CUBEPROPERTY_IS_EMPTY(ret.data[i][j]))
-					{
-						independent = false;
-						break;
-					}
-				}
-			}
-			if(independent) orientations[layer] = rand() % 4;
-		}else{
-			orientations[layer] = rand() % 4;
-		}
-	}
+	// if(depth > 0)
+	// {
+	// 	if(layer == 0)
+	// 	{
+	// 		bool independent = true;
+	// 		for(int i = 0; i < LEVEL_WIDTH; i++)
+	// 		{
+	// 			for(int j = 0; j < LEVEL_WIDTH; j++)
+	// 			{
+	// 				if(!CUBEPROPERTY_IS_EMPTY(previous_slice[layer].data[i][j]) && !CUBEPROPERTY_IS_EMPTY(ret.data[i][j]))
+	// 				{
+	// 					independent = false;
+	// 					break;
+	// 				}
+	// 			}
+	// 		}
+	// 		if(independent) orientations[layer] = rand() % 4;
+	// 	}else{
+	// 		orientations[layer] = rand() % 4;
+	// 	}
+	// }
 
-	slice_s ret2;
+	slice_s ret2 = ret;
 
-	rotateSlice(&ret2, &ret, orientations[layer]);
+	rotateSlice(&ret2, &ret, constraints.getLayerSliceOrientation(layer, depth));
 
 	previous_slice[layer] = ret;
 	n[layer]++;
@@ -621,8 +605,66 @@ ConstraintManager::ConstraintManager()
 void ConstraintManager::reset()
 {
 	instanced_data.clear();
+	instanced_data_slice.clear();
 	data.clear();
 	dataMap.clear();
+	for(int i = 0; i < LEVEL_NUMLAYERS; i++) orientations[i].clear();
+}
+
+int ConstraintManager::getLayerSliceOrientation(int layer, int slice)
+{
+	if(layer < 0 || layer >= LEVEL_NUMLAYERS) return 0;
+	if(slice <= 0 || slice >= (int)orientations[layer].size() + 1) return 0; // on purpose
+
+	// if(layer == 0) printf("orientation %d\n", orientations[layer][slice - 1]);
+
+	return orientations[layer][slice - 1];
+}
+
+unsigned char ConstraintManager::getConstrainedCubeLayer(int layer, glm::ivec3 p)
+{
+	pathConstraint_s c;
+	if(!getConstraint(p, c)) return 0;
+
+	return getConstrainedCubeLayer(layer, c);
+}
+
+unsigned char ConstraintManager::getConstrainedCubeLayer(int layer, pathConstraint_s c)
+{
+	if(!c.empty)
+	{
+		int v = 0;
+		cubePropertyDirection_t dir = CUBEPROPERTY_GET_DIRECTION(c.properties);
+		bool climbable = CUBEPROPERTY_GET_CLIMBABLE(c.properties);
+
+		if(!climbable)
+		{
+			if(dir == CUBEPROPERTY_DIRECTION_LEFT) v |= (2 << 4);
+			else if(dir == CUBEPROPERTY_DIRECTION_RIGHT) v |= (3 << 4);
+		}else{
+			if(layer == 1) v |= (2 << 4);
+			else if(layer == 2) v |= (3 << 4);
+		}
+
+		if((v == 0 && layer == 0)
+			|| (v == (2 << 4) && layer == 1)
+			|| (v == (3 << 4) && layer == 2))
+		{
+			return (v | 1);
+		}
+	}
+
+	return 0;
+}
+
+bool ConstraintManager::isConstrainedCubeInLayer(int layer, pathConstraint_s c)
+{
+	return getConstrainedCubeLayer(layer, c) != 0;
+}
+
+bool ConstraintManager::isConstrainedCubeInLayer(int layer, glm::ivec3 p)
+{
+	return getConstrainedCubeLayer(layer, p) != 0;
 }
 
 bool ConstraintManager::doesConstraintConflict(pathConstraint_s constraint)
@@ -677,10 +719,60 @@ void ConstraintManager::clearInstancedConstraints()
 
 void ConstraintManager::flushInstancedConstraints()
 {
+	int cur_depth = orientations[0].size();
+	bool new_slice = false;
 	for(int i = 0; i < (int)instanced_data.size(); i++)
 	{
 		addConstraint(instanced_data[i]);
+		if(instanced_data[i].position.z > cur_depth + 1) new_slice = true;
 	}
+
+	if(new_slice && instanced_data_slice.size() > 0)
+	{
+		for(int l = 0; l < LEVEL_NUMLAYERS; l++)
+		{
+			bool independent = true;
+			for(int j = 0; independent && j < instanced_data_slice.size(); j++)
+			{
+				int cur_depth = -1;
+
+				if(l == 0) printf("starting\n");
+
+				for(int i = 0; independent && i < (int)instanced_data_slice[j].size(); i++)
+				{
+					if(l == 0) std::cout << glm::to_string(instanced_data_slice[j][i].position) << ", " << (int)getConstrainedCubeLayer(l, instanced_data_slice[j][i].position) << std::endl;
+					if(isConstrainedCubeInLayer(l, instanced_data_slice[j][i].position))
+					{
+						if(cur_depth < 0)
+						{
+							cur_depth = instanced_data_slice[j][i].position.z;
+							if(l == 0)
+							{
+								// std::cout << glm::to_string(instanced_data_slice[j][i].position) << ", " << (int)getConstrainedCubeLayer(l, instanced_data_slice[j][i].position) << std::endl;
+							}
+						}
+						else if(cur_depth != instanced_data_slice[j][i].position.z)
+						{
+							independent = false;
+							if(l == 0)
+							{
+								// std::cout << glm::to_string(instanced_data_slice[j][i].position) << ", " << (int)getConstrainedCubeLayer(l, instanced_data_slice[j][i].position) << std::endl;
+							}
+						}
+					}
+				}
+			}
+
+			if(l == 0) std::cout << independent << std::endl;
+
+			if(independent) orientations[l].push_back(rand() % 4);
+			else orientations[l].push_back((orientations[l].size() > 0) ? orientations[l].back() : 0);
+		}
+
+		instanced_data_slice.clear();
+	}
+
+	instanced_data_slice.push_back(instanced_data);
 
 	clearInstancedConstraints();
 }
@@ -706,6 +798,15 @@ bool ConstraintManager::getConstraint(int id, pathConstraint_s& out)
 	if(id < 0 || id >= (int)data.size()) return false;
 
 	out = *data[id];
+
+	return true;
+}
+
+bool ConstraintManager::getConstraint(glm::ivec3 p, pathConstraint_s& out)
+{
+	if(dataMap.find(p) == dataMap.end()) return false;
+
+	out = dataMap[p];
 
 	return true;
 }
