@@ -117,6 +117,8 @@ class LevelGeneratorRandom : public LevelGenerator
 
 	private:
 		int n[LEVEL_NUMLAYERS];
+		int orientations[LEVEL_NUMLAYERS];
+		slice_s previous_slice[LEVEL_NUMLAYERS];
 		int length;
 		std::vector<glm::ivec3> path;
 		ConstraintManager constraints;

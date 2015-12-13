@@ -85,14 +85,27 @@ int main(void)
 		if(Input::isKeyHold(GLFW_KEY_I)) lighting.setLightPosition(0, lighting.getLightPosition(0) + glm::vec3(0.0, 0.0, 2.0) * float(deltaTime));
 		if(Input::isKeyHold(GLFW_KEY_K)) lighting.setLightPosition(0, lighting.getLightPosition(0) - glm::vec3(0.0, 0.0, 2.0) * float(deltaTime));
 
-		if(Input::isKeyPressed(GLFW_KEY_T)) level.rotateLayer(layer);
+		if(Input::isKeyPressed(GLFW_KEY_T))
+		{
+			bool canRotate = player.canRotateLayer(level, layer);
+
+			for(int i = 0; !canRotate && i < LEVEL_NUMLAYERS; i++)
+			{
+				if(i != layer && !player.canRotateLayer(level, i))
+				{
+					canRotate = true;
+				}
+			}
+
+			if(canRotate) level.rotateLayer(layer);
+		}
+
 		if(Input::isKeyPressed(GLFW_KEY_R))
 		{
 			layer++;
 			layer %= LEVEL_NUMLAYERS;
 			hud.updateSelectedLayer(layer);
 		}
-
 
 		lighting.setLightPosition(0, glm::normalize(lighting.getLightPosition(0)));
 

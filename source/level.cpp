@@ -250,7 +250,14 @@ unsigned char SliceCollection::getCubeInfo(glm::ivec3 p, bool* out_of_bounds)
 
 	if(out_of_bounds) *out_of_bounds = false;
 
-	return data[p.z].data[LEVEL_WIDTH - 1 - p.y][p.x];
+	if(orientation == 0) return data[p.z].data[LEVEL_WIDTH - 1 - p.y][p.x];
+	else{
+		slice_s rotated;
+
+		rotateSlice(&rotated, &data[p.z], orientation);
+
+		return rotated.data[LEVEL_WIDTH - 1 - p.y][p.x];
+	}
 }
 
 cubeProperties_t _getCubeProperties(unsigned char cube_info)
@@ -296,6 +303,11 @@ Layer::Layer():
 	orientation(0.0f)
 {
 
+}
+
+bool Layer::isCube(glm::vec3 p)
+{
+	return getCubeFullId(slices.getCubeInfo(p)) != 0;
 }
 
 void Layer::rotate()
@@ -533,4 +545,17 @@ bool Level::getNextLocation(glm::vec3 p, glm::vec3& out)
 
 	out = p;
 	return false;
+}
+
+bool Level::isCubeLayer(int layer, glm::vec3 p)
+{
+	if(layer < 0 || layer >= LEVEL_NUMLAYERS) return false;
+
+	glm::ivec3 _p(p);
+
+	_p.x += LEVEL_WIDTH / 2;
+	_p.y += LEVEL_WIDTH / 2;
+	_p.z -= getOffset();
+
+	return layers[layer].isCube(_p);
 }

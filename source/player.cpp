@@ -222,6 +222,13 @@ void Player::update(Level& level, float delta)
 	cube_outline.setColor(0, cubeTypes[type].color, true);
 }
 
+bool Player::canRotateLayer(Level& level, int layer)
+{
+	if(layer < 0 || layer >= LEVEL_NUMLAYERS) return false;
+
+	return !level.isCubeLayer(layer, position + glm::vec3(0.0f, -1.0f, 0.0f));
+}
+
 void Player::draw(Camera& camera, Lighting& lighting, bool shadow)
 {
 	if(shadow)

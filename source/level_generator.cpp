@@ -386,13 +386,12 @@ static pathStepRandom_s markov_steps[] =
 	(pathStepRandom_s) {0.0f, new PathStepTypeAboveLeft()},
 	(pathStepRandom_s) {0.0f, new PathStepTypeAboveRight()},
 	(pathStepRandom_s) {0.0f, new PathStepTypeAboveForward()},
-	(pathStepRandom_s) {0.0f, new PathStepTypeBelowLeft()},
-	(pathStepRandom_s) {0.0f, new PathStepTypeBelowRight()},
-	(pathStepRandom_s) {0.0f, new PathStepTypeBelowForward()},
+	(pathStepRandom_s) {1.0f, new PathStepTypeBelowLeft()},
+	(pathStepRandom_s) {1.0f, new PathStepTypeBelowRight()},
+	(pathStepRandom_s) {1.0f, new PathStepTypeBelowForward()},
 };
 
-// static const int markov_length = sizeof(markov_steps) / sizeof(pathStepRandom_s);
-static const int markov_length = 3;
+static const int markov_length = sizeof(markov_steps) / sizeof(pathStepRandom_s);
 static std::random_device rd;
 
 Markov::Markov(pathStepRandom_s* steps, int length):
@@ -465,6 +464,7 @@ void LevelGeneratorRandom::reset()
 	for(int i = 0; i < LEVEL_NUMLAYERS; i++)
 	{
 		n[i] = 0;
+		orientations[i] = 0;
 	}
 
 	for(int i = 0; i < length + 1; i++)
@@ -581,9 +581,36 @@ slice_s LevelGeneratorRandom::getSlice(int layer)
 		constraints.getConstraint(index, c);
 	}
 
+	if(depth > 0)
+	{
+		if(layer == 0)
+		{
+			bool independent = true;
+			for(int i = 0; i < LEVEL_WIDTH; i++)
+			{
+				for(int j = 0; j < LEVEL_WIDTH; j++)
+				{
+					if(!CUBEPROPERTY_IS_EMPTY(previous_slice[layer].data[i][j]) && !CUBEPROPERTY_IS_EMPTY(ret.data[i][j]))
+					{
+						independent = false;
+						break;
+					}
+				}
+			}
+			if(independent) orientations[layer] = rand() % 4;
+		}else{
+			orientations[layer] = rand() % 4;
+		}
+	}
+
+	slice_s ret2;
+
+	rotateSlice(&ret2, &ret, orientations[layer]);
+
+	previous_slice[layer] = ret;
 	n[layer]++;
 
-	return ret;
+	return ret2;
 }
 
 ConstraintManager::ConstraintManager()

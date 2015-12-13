@@ -93,6 +93,8 @@ class Layer
 		void addSlice(slice_s s);
 		void popSlice();
 
+		bool isCube(glm::vec3 p);
+
 	private:
 		SliceCollection slices;
 		layerState_t state;
@@ -117,6 +119,7 @@ class Level
 
 		int getOffset();
 
+		bool isCubeLayer(int layer, glm::vec3 p);
 		unsigned char getCubeInfo(glm::vec3 p);
 		cubeProperties_t getCubeProperties(glm::vec3 p);
 

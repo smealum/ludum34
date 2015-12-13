@@ -31,6 +31,8 @@ class Player
 		void doStep(Level& level);
 
 		void setType(unsigned char type);
+
+		bool canRotateLayer(Level& level, int layer);
 		
 		glm::vec3 getPosition();
 		
