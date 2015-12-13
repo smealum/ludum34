@@ -133,6 +133,7 @@ void Cubes::draw(Camera& camera, Lighting& lighting)
 		lighting.update(shader);
 	}
 
+	shader.setUniform("t", (float)glfwGetTime());
 	shader.setUniform("model", model);
 	shader.setUniform("bTexture", false);
 

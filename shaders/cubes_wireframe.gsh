@@ -4,6 +4,7 @@ layout(points) in;
 layout(triangle_strip, max_vertices = 24) out;
 
 uniform mat4 model, view, proj;
+uniform float t;
 
 in VertexAttrib
 {
@@ -34,6 +35,7 @@ void main() {
     vec3 z = 0.53 * viewmodel[2].xyz;
 
     vec3 pos = vec3(gl_in[0].gl_Position);
+    pos += sin(t + pos.z) * vec3(0.0, 0.1, 0.0);
     vec3 tmp;
 
     vout.color = vin[0].color;
