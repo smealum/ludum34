@@ -153,6 +153,15 @@ void Cubes::setIntro(int i, bool update)
 	if(update) this->update();
 }
 
+void Cubes::clearIntro(int i, bool update)
+{
+	if(i >= current_n) return;
+
+	data[i].fall_time = 0.0f;
+
+	if(update) this->update();
+}
+
 void Cubes::setFloatiness(float floatiness)
 {
 	this->floatiness = floatiness;

@@ -9,7 +9,9 @@ Game::Game():
 	player(),
 	hud(),
 	level(NULL),
-	layer(0)
+	layer(0),
+	state(GAME_INTRO),
+	timeStart(glfwGetTime())
 {
 	// CAMERA
 	camera.setPosition(glm::vec3(-5.0f, 10.0f, -10.0f));
@@ -43,6 +45,20 @@ void Game::update(float delta)
 		}
 
 		if(canRotate) level->rotateLayer(layer);
+	}
+
+	switch(state)
+	{
+		case GAME_INTRO:
+			if(glfwGetTime() - timeStart > 5.0)
+			{
+				state = GAME_PLAYING;
+				player.finishIntro();
+				level->finishIntro();
+			}
+			break;
+		default:
+			break;
 	}
 
 	if(Input::isKeyPressed(GLFW_KEY_R))
@@ -89,4 +105,7 @@ void Game::resetLevel()
 
 	level->reset();
 	player.reset();
+
+	state = GAME_INTRO;
+	timeStart = glfwGetTime();
 }

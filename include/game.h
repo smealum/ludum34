@@ -8,6 +8,13 @@
 #include "lighting.h"
 #include "hud.h"
 
+typedef enum
+{
+	GAME_INTRO,
+	GAME_PLAYING,
+	GAME_OUTRO,
+}gameState_t;
+
 class Game
 {
 	public:
@@ -28,6 +35,9 @@ class Game
 		Level* level;
 
 		int layer;
+
+		gameState_t state;
+		double timeStart;
 };
 
 #endif

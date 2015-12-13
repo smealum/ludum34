@@ -12,6 +12,7 @@
 
 typedef enum
 {
+	PLAYER_INTRO,
 	PLAYER_IDLE,
 	PLAYER_NEWLYIDLE,
 	PLAYER_MOVING
@@ -33,6 +34,8 @@ class Player
 		void setType(unsigned char type);
 
 		bool canRotateLayer(Level& level, int layer);
+
+		void finishIntro();
 		
 		glm::vec3 getPosition();
 

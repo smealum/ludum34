@@ -40,6 +40,14 @@ typedef enum
 	LAYER_ROTATING,
 }layerState_t;
 
+typedef enum
+{
+	LEVEL_INTRO_START,
+	LEVEL_INTRO,
+	LEVEL_PLAYING,
+	LEVEL_OUTRO,
+}levelState_t;
+
 typedef struct
 {
 	glm::vec3 color;
@@ -126,6 +134,10 @@ class Level
 
 		int getOffset();
 
+		void setIntro();
+		void clearIntro();
+		void finishIntro();
+
 		bool isCubeLayer(int layer, glm::vec3 p);
 		unsigned char getCubeInfo(glm::vec3 p);
 		cubeProperties_t getCubeProperties(glm::vec3 p);
@@ -137,6 +149,7 @@ class Level
 		void reset();
 
 	private:
+		levelState_t state;
 		Cubes deadcubes, deadcubes_wireframe;
 		LevelGenerator& generator;
 		SliceCollection slices;

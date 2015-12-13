@@ -423,6 +423,7 @@ void Layer::removeCube(glm::ivec3 p)
 }
 
 Level::Level(LevelGenerator& lg):
+	state(LEVEL_INTRO_START),
 	deadcubes(SC_NUMCUBES, 0),
 	deadcubes_wireframe(SC_NUMCUBES, 0, true),
 	generator(lg)
@@ -468,19 +469,30 @@ void Level::update(float delta)
 		}
 	}
 
-	// TEMP
-	if(Input::isKeyPressed(GLFW_KEY_P))
-	{
-		for(int i = 0; i < SC_NUMCUBES; i++)
-		{
-			slices.cubes.setIntro(i, true);
-			slices.cubes_wireframe.setIntro(i, true);
-		}
-	}
-
 	if(needUpdate)
 	{
 		updateGeometry();
+	}
+
+	switch(state)
+	{
+		case LEVEL_INTRO_START:
+			setIntro();
+			state = LEVEL_INTRO;
+			break;
+		case LEVEL_INTRO:
+			break;
+		default:
+			break;
+	}
+}
+
+void Level::finishIntro()
+{
+	if(state == LEVEL_INTRO)
+	{
+		state = LEVEL_PLAYING;
+		clearIntro();
 	}
 }
 
@@ -512,7 +524,7 @@ void Level::killCube(glm::vec3 p)
 
 void Level::rotateLayer(int l)
 {
-	if(l < 0 || l >= LEVEL_NUMLAYERS) return;
+	if(l < 0 || l >= LEVEL_NUMLAYERS || state != LEVEL_PLAYING) return;
 
 	layers[l].rotate();
 
@@ -660,6 +672,7 @@ bool Level::isCubeLayer(int layer, glm::vec3 p)
 
 void Level::reset()
 {
+	state = LEVEL_INTRO_START;
 	generator.reset();
 	deadcubes.clear();
 	deadcubes_wireframe.clear();
@@ -667,5 +680,23 @@ void Level::reset()
 	for(int i = 0; i < LEVEL_NUMLAYERS; i++)
 	{
 		layers[i].clear();
+	}
+}
+
+void Level::setIntro()
+{
+	for(int i = 0; i < SC_NUMCUBES; i++)
+	{
+		slices.cubes.setIntro(i, true);
+		slices.cubes_wireframe.setIntro(i, true);
+	}
+}
+
+void Level::clearIntro()
+{
+	for(int i = 0; i < SC_NUMCUBES; i++)
+	{
+		slices.cubes.clearIntro(i, true);
+		slices.cubes_wireframe.clearIntro(i, true);
 	}
 }

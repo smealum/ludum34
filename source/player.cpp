@@ -12,8 +12,6 @@ Player::Player():
 
 	cube.setColor(0, glm::vec3(255.0f, 174.0f, 68.0f) * (1.4f / 255), true);
 
-	last_position = position;
-
 	// setup shadow lighting
 	shadow_lighting.setObjectColor(false);
 	shadow_lighting.setLightEnabled(0, true);
@@ -30,13 +28,22 @@ Player::Player():
 void Player::reset()
 {
 	position = glm::vec3(0.0f, 0.0f, 0.0f);
+	last_position = position;
 	direction = glm::vec3(1.0f, 0.0f, 0.0f);
 	rotation = false;
 	progress = 0.0f;
 	target_progress = 1.0f;
-	state = PLAYER_NEWLYIDLE;
+	state = PLAYER_INTRO;
 	type = 0;
 	moves.clear();
+}
+
+void Player::finishIntro()
+{
+	if(state == PLAYER_INTRO)
+	{
+		state = PLAYER_NEWLYIDLE;
+	}
 }
 
 void Player::setNextMove(glm::vec3 _direction)
@@ -155,6 +162,8 @@ void Player::update(Level& level, float delta)
 
 		switch(state)
 		{
+			case PLAYER_INTRO:
+				break;
 			case PLAYER_IDLE:
 				{
 					if(!moves.empty())
@@ -270,7 +279,7 @@ void Player::draw(Camera& camera, Lighting& lighting, bool shadow)
 	}
 	
 	cube.draw(camera, shadow ? shadow_lighting : lighting);
-	path.draw(camera, shadow ? shadow_lighting : lighting);
+	if(state != PLAYER_INTRO) path.draw(camera, shadow ? shadow_lighting : lighting);
 	
 	if(type > 1)
 	{

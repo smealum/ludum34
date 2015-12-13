@@ -45,7 +45,7 @@ void main() {
 	}else if(vin[0].fall_time < -0.0001)
 	{
 		// intro
-		float f = max(2.0 - (t - (-vin[0].fall_time - (pos.z * 0.3 + 3.5))), 0.0);
+		float f = max(1.8 - (t - (-vin[0].fall_time - (pos.z + 10.0) * 0.15)), 0.0);
 		vec3 intro_component = vec3(0.0, -1.0, 0.0) * f * f * 4.0;
 		pos += intro_component;
 	}

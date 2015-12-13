@@ -27,6 +27,7 @@ class Cubes
 		void setIntro(int i, bool update = false);
 		void setFalling(int i, bool update = false);
 		void setFloatiness(float floatiness);
+		void clearIntro(int i, bool update = false);
 
 		void clear();
 
