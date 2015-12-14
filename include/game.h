@@ -13,6 +13,7 @@
 
 typedef enum
 {
+	GAME_TITLE_SCREEN,
 	GAME_INTRO,
 	GAME_PLAYING,
 	GAME_OUTRO,
@@ -44,8 +45,6 @@ class Game
 		Player player;
 		Hud hud;
 
-		Sound music;
-
 		Level* level;
 
 		int layer;
@@ -54,8 +53,13 @@ class Game
 		gameTransitionTarget_t transitionTarget;
 		double timeStart;
 
+		Sound music;
+
 		Text gameOverText;
-		// Text successText;
+		Text successText;
+		Text titleText1;
+		Text titleText2;
+		Text titleText3;
 };
 
 #endif

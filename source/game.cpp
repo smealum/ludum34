@@ -10,10 +10,14 @@ Game::Game():
 	hud(),
 	level(NULL),
 	layer(0),
-	state(GAME_INTRO),
+	state(GAME_TITLE_SCREEN),
 	timeStart(glfwGetTime()),
 	music("music.wav", true),
-	gameOverText("Game Over", glm::vec2(0.0f, 0.0f), 0.2f);
+	gameOverText("Game Over", glm::vec2(-0.725f, 0.0f), 0.16f),
+	successText( " Success ", glm::vec2(-0.725f, 0.0f), 0.16f),
+	titleText1(  "  qBen   ", glm::vec2(-0.725f + 0.16f / 2, 0.0f), 0.16f),
+	titleText2(  "Press space to start the tutorial", glm::vec2(-0.725f + 0.16f / 2, -0.5f), 0.03f),
+	titleText3(  "  Press enter to play the game   ", glm::vec2(-0.725f + 0.16f / 2, -0.5f), 0.03f)
 {
 	// CAMERA
 	camera.setPosition(glm::vec3(-5.0f, 10.0f, -10.0f));
@@ -56,19 +60,10 @@ void Game::update(float delta)
 {
 	if(!level) return;
 
-	if(Input::isKeyPressed(GLFW_KEY_T))
+	if(state == GAME_TITLE_SCREEN)
 	{
-		bool canRotate = player.canRotateLayer(*level, layer);
 
-		for(int i = 0; !canRotate && i < LEVEL_NUMLAYERS; i++)
-		{
-			if(i != layer && !player.canRotateLayer(*level, i))
-			{
-				canRotate = true;
-			}
-		}
-
-		if(canRotate) level->rotateLayer(layer);
+		return;
 	}
 
 	switch(state)
@@ -110,6 +105,38 @@ void Game::update(float delta)
 				// do nothing
 			}
 
+			if(Input::isKeyPressed(GLFW_KEY_SPACE))
+			{
+				startOutro(GAME_GAMEOVER);
+			}
+
+			if(Input::isKeyPressed(GLFW_KEY_ENTER))
+			{
+				startOutro(GAME_NEXTLEVEL);
+			}
+
+			if(Input::isKeyPressed(GLFW_KEY_R))
+			{
+				layer++;
+				layer %= LEVEL_NUMLAYERS;
+				hud.updateSelectedLayer(layer);
+			}
+
+			if(Input::isKeyPressed(GLFW_KEY_T))
+			{
+				bool canRotate = player.canRotateLayer(*level, layer);
+
+				for(int i = 0; !canRotate && i < LEVEL_NUMLAYERS; i++)
+				{
+					if(i != layer && !player.canRotateLayer(*level, i))
+					{
+						canRotate = true;
+					}
+				}
+
+				if(canRotate) level->rotateLayer(layer);
+			}
+
 			break;
 		case GAME_OUTRO:
 			if(glfwGetTime() - timeStart > 5.0)
@@ -125,23 +152,6 @@ void Game::update(float delta)
 			break;
 		default:
 			break;
-	}
-
-	if(Input::isKeyPressed(GLFW_KEY_R))
-	{
-		layer++;
-		layer %= LEVEL_NUMLAYERS;
-		hud.updateSelectedLayer(layer);
-	}
-
-	if(Input::isKeyPressed(GLFW_KEY_SPACE))
-	{
-		startOutro(GAME_GAMEOVER);
-	}
-
-	if(Input::isKeyPressed(GLFW_KEY_ENTER))
-	{
-		startOutro(GAME_NEXTLEVEL);
 	}
 
 	if(level->update(delta))
@@ -161,6 +171,14 @@ void Game::draw()
 
 	background.draw();
 
+	if(state == GAME_TITLE_SCREEN)
+	{
+		titleText1.draw();
+		titleText2.draw();
+		titleText3.draw();
+		return;
+	}
+
 	level->draw(camera, lighting, false, layer + 1);
 
 	player.draw(camera, lighting, true);
@@ -168,7 +186,16 @@ void Game::draw()
 	
 	level->draw(camera, lighting, true, layer + 1);
 
-	gameOverText.draw();
+	if(state == GAME_OUTRO)
+	{
+		if(transitionTarget == GAME_GAMEOVER)
+		{
+			gameOverText.draw();
+		}else if(transitionTarget == GAME_NEXTLEVEL){
+			successText.draw();
+		}
+	}
+
 	hud.draw();
 }
 
