@@ -6,6 +6,8 @@
 static const glm::vec3 playerColor = glm::vec3(255.0f, 174.0f, 68.0f) * (1.4f / 255);
 
 Player::Player():
+	sfx_cubemove("cubemove.wav", false),
+	sfx_endpulse("endpulse.wav", false),
 	cube(1),
 	cube_outline(1, 1, true),
 	path(PLAYER_PATHLENGTH)
@@ -29,6 +31,8 @@ Player::Player():
 
 void Player::reset()
 {
+	missedPulses = 0;
+
 	position = glm::vec3(0.0f, 0.0f, 0.0f);
 	last_position = position;
 	direction = glm::vec3(1.0f, 0.0f, 0.0f);
@@ -46,6 +50,8 @@ void Player::reset()
 	autopilot = false;
 	timer = -500.0f;
 	outline_timer = 0.0f;
+
+	gameover = false;
 
 	type = 0;
 	moves.clear();
@@ -136,11 +142,15 @@ bool Player::getAutopilot()
 void Player::setAutopilot(bool v)
 {
 	autopilot = v;
+	if(autopilot)
+	{
+		sfx_endpulse.play();
+	}
 }
 
-void Player::doStep(Level& level, bool nonlethal)
+bool Player::doStep(Level& level, bool nonlethal)
 {
-	if(state != PLAYER_IDLE || !moves.empty()) return;
+	if(state != PLAYER_IDLE || !moves.empty()) return false;
 
 	glm::vec3 next;
 
@@ -150,7 +160,7 @@ void Player::doStep(Level& level, bool nonlethal)
 	{
 		// TODO : cause malus
 		autopilot = false;
-		return;
+		return false;
 	}
 
 	// is next on same horizontal plane ?
@@ -159,10 +169,10 @@ void Player::doStep(Level& level, bool nonlethal)
 		if((next.x < -LEVEL_WIDTH / 2 || next.x > LEVEL_WIDTH / 2) && nonlethal)
 		{
 			autopilot = false;
-			return;
+			return false;
 		}
 		setNextMove(next - position);
-		return;
+		return true;
 	}
 
 	// is next above us ?
@@ -177,7 +187,7 @@ void Player::doStep(Level& level, bool nonlethal)
 		}
 		_direction.y = 0.0f;
 		setNextMove(_direction);
-		return;
+		return true;
 	}
 
 	// is next below us ?
@@ -186,7 +196,7 @@ void Player::doStep(Level& level, bool nonlethal)
 		if(next.y <= -LEVEL_WIDTH / 2 && nonlethal)
 		{
 			autopilot = false;
-			return;
+			return false;
 		}
 		int height_differential = int(position.y - next.y);
 		glm::vec3 _direction = next - position;
@@ -196,8 +206,10 @@ void Player::doStep(Level& level, bool nonlethal)
 		{
 			setNextMove(glm::vec3(0.0f, -1.0f, 0.0f));
 		}
-		return;
+		return true;
 	}
+
+	return false;
 }
 
 void Player::updatePath(Level& level)
@@ -278,6 +290,8 @@ void Player::update(Level& level, float delta)
 					position += direction;
 					position = glm::vec3(glm::ivec3(position));
 
+					sfx_cubemove.play();
+
 					state = PLAYER_NEWLYIDLE;
 
 					while(int(position.z - level.getOffset()) > 8)
@@ -301,6 +315,18 @@ void Player::update(Level& level, float delta)
 	if(autopilot)
 	{
 		doStep(level, true);
+		
+		if(autopilot)
+		{
+			missedPulses = 0;
+		}else{
+			missedPulses++;
+
+			if(missedPulses > PLAYER_MAXMISSED)
+			{
+				gameover = true;
+			}
+		}
 	}
 
 	// if(Input::isKeyPressed(GLFW_KEY_Z))
@@ -347,7 +373,7 @@ bool Player::canRotateLayer(Level& level, int layer)
 
 bool Player::isGameover()
 {
-	return position.y <= - LEVEL_WIDTH / 2;
+	return gameover || position.y <= - LEVEL_WIDTH / 2;
 }
 
 void Player::draw(Camera& camera, Lighting& lighting, bool shadow)
@@ -374,10 +400,15 @@ void Player::draw(Camera& camera, Lighting& lighting, bool shadow)
 	float f = (sin(timer * 5.0f) + 1.0f) * 0.5f;
 	float blending = timer / PLAYER_PERIOD;
 	glm::vec3 color2 = glm::vec3(68.0f, 255.0f, 74.0f) * (1.0f / 255.0f);
+	glm::vec3 color3 = glm::vec3(255.0f, 38.0f, 0.0f) * (1.0f / 255.0f);
+
+	float blending2 = ((missedPulses - 1) * 1.0f) / (PLAYER_MAXMISSED - 1);
+	glm::vec3 color_final = color2 * (1 - blending2) + blending2 * color3;
+	if(missedPulses == 1) color_final = glm::vec3(255.0f, 142.0f, 0.0f) * (1.0f / 255.0f);
 
 	if(timer > -50.0f)
 	{
-		cube.setColor(0, playerColor * blending + (1.0f - blending) * color2, true);
+		cube.setColor(0, playerColor * blending + (1.0f - blending) * color_final, true);
 		if(timer <= 0.1f)
 		{
 			outline_timer = 1.0f;
@@ -392,7 +423,7 @@ void Player::draw(Camera& camera, Lighting& lighting, bool shadow)
 	// if(type > 1)
 	if(outline_timer >= 0.0f)
 	{
-		cube_outline.setColor(0, glm::vec4(color2, outline_timer * outline_timer * outline_timer), true);
+		cube_outline.setColor(0, glm::vec4(color_final, outline_timer * outline_timer * outline_timer), true);
 		cube_outline.model = cube.model;
 		cube_outline.draw(camera, outline_lighting);
 	}

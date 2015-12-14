@@ -5,11 +5,14 @@
 #include "cubes.h"
 #include "level.h"
 #include "path.h"
+#include "audio.h"
 
 #include <deque>
 
 #define PLAYER_PATHLENGTH (8)
 #define PLAYER_PERIOD (5.0f)
+
+#define PLAYER_MAXMISSED (3)
 
 typedef enum
 {
@@ -31,7 +34,7 @@ class Player
 		
 		void setNextMove(glm::vec3 direction);
 		void startNextMove(void);
-		void doStep(Level& level, bool nonlethal = false);
+		bool doStep(Level& level, bool nonlethal = false);
 
 		void setType(unsigned char type);
 		void updatePath(Level& level);
@@ -53,6 +56,9 @@ class Player
 		float outline_timer;
 
 	private:
+		int missedPulses;
+		Sound sfx_cubemove;
+		Sound sfx_endpulse;
 		glm::vec3 position, last_position;
 		glm::vec3 direction;
 		glm::vec3 rotation_axis, rotation_center;
@@ -65,6 +71,7 @@ class Player
 
 		bool done_intro;
 		bool autopilot;
+		bool gameover;
 
 		unsigned char type;
 

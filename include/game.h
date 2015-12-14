@@ -7,6 +7,7 @@
 #include "camera.h"
 #include "lighting.h"
 #include "background.h"
+#include "audio.h"
 #include "hud.h"
 
 typedef enum
@@ -41,6 +42,8 @@ class Game
 		Lighting lighting;
 		Player player;
 		Hud hud;
+
+		Sound music;
 
 		Level* level;
 

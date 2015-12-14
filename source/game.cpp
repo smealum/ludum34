@@ -11,7 +11,8 @@ Game::Game():
 	level(NULL),
 	layer(0),
 	state(GAME_INTRO),
-	timeStart(glfwGetTime())
+	timeStart(glfwGetTime()),
+	music("music.wav", true)
 {
 	// CAMERA
 	camera.setPosition(glm::vec3(-5.0f, 10.0f, -10.0f));
@@ -26,6 +27,8 @@ Game::Game():
 	lighting.setLightShininess(0, 3.0f);
 
 	glClearColor(19.0f / 255.0f, 31.0f / 255.0f, 46.0f / 255.0f, 1.0f);
+
+	music.play();
 }
 
 void Game::startIntro()
