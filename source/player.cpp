@@ -3,6 +3,8 @@
 #include "_math.h"
 #include "input.h"
 
+static const glm::vec3 playerColor = glm::vec3(255.0f, 174.0f, 68.0f) * (1.4f / 255);
+
 Player::Player():
 	cube(1),
 	cube_outline(1, 1, true),
@@ -10,7 +12,7 @@ Player::Player():
 {
 	reset();
 
-	cube.setColor(0, glm::vec3(255.0f, 174.0f, 68.0f) * (1.4f / 255), true);
+	cube.setColor(0, playerColor, true);
 
 	// setup shadow lighting
 	shadow_lighting.setObjectColor(false);
@@ -42,6 +44,8 @@ void Player::reset()
 	target_progress = 2 * M_PI;
 
 	autopilot = false;
+	timer = -500.0f;
+	outline_timer = 0.0f;
 
 	type = 0;
 	moves.clear();
@@ -152,7 +156,7 @@ void Player::doStep(Level& level, bool nonlethal)
 	// is next on same horizontal plane ?
 	if(fabs(position.y - next.y) < 0.001f)
 	{
-		if((next.x <= -LEVEL_WIDTH / 2 || next.x > LEVEL_WIDTH / 2) && nonlethal)
+		if((next.x < -LEVEL_WIDTH / 2 || next.x > LEVEL_WIDTH / 2) && nonlethal)
 		{
 			autopilot = false;
 			return;
@@ -287,6 +291,11 @@ void Player::update(Level& level, float delta)
 		}
 	}while(old_state != state && state != PLAYER_MOVING);
 
+	if(outline_timer <= 0.0f)
+	{
+		outline_timer = 0.0f;
+	}else outline_timer -= 1.0f * delta;
+
 	path.update(delta);
 
 	if(autopilot)
@@ -294,37 +303,37 @@ void Player::update(Level& level, float delta)
 		doStep(level, true);
 	}
 
-	if(Input::isKeyPressed(GLFW_KEY_Z))
-	{
-		setNextMove(glm::vec3(1.0f, 1.0f, 0.0f));
-		setNextMove(glm::vec3(1.0f, 0.0f, 0.0f));
-	}
+	// if(Input::isKeyPressed(GLFW_KEY_Z))
+	// {
+	// 	setNextMove(glm::vec3(1.0f, 1.0f, 0.0f));
+	// 	setNextMove(glm::vec3(1.0f, 0.0f, 0.0f));
+	// }
 
-	if(Input::isKeyPressed(GLFW_KEY_X))
-	{
-		setNextMove(glm::vec3(0.0f, 1.0f, 1.0f));
-		setNextMove(glm::vec3(0.0f, 0.0f, 1.0f));
-	}
+	// if(Input::isKeyPressed(GLFW_KEY_X))
+	// {
+	// 	setNextMove(glm::vec3(0.0f, 1.0f, 1.0f));
+	// 	setNextMove(glm::vec3(0.0f, 0.0f, 1.0f));
+	// }
 
-	if(Input::isKeyPressed(GLFW_KEY_A))
-	{
-		setNextMove(glm::vec3(1.0f, 0.0f, 0.0f));
-	}
+	// if(Input::isKeyPressed(GLFW_KEY_A))
+	// {
+	// 	setNextMove(glm::vec3(1.0f, 0.0f, 0.0f));
+	// }
 
-	if(Input::isKeyPressed(GLFW_KEY_D))
-	{
-		setNextMove(glm::vec3(-1.0f, 0.0f, 0.0f));
-	}
+	// if(Input::isKeyPressed(GLFW_KEY_D))
+	// {
+	// 	setNextMove(glm::vec3(-1.0f, 0.0f, 0.0f));
+	// }
 
-	if(Input::isKeyPressed(GLFW_KEY_W))
-	{
-		setNextMove(glm::vec3(0.0f, 0.0f, 1.0f));
-	}
+	// if(Input::isKeyPressed(GLFW_KEY_W))
+	// {
+	// 	setNextMove(glm::vec3(0.0f, 0.0f, 1.0f));
+	// }
 
-	if(Input::isKeyPressed(GLFW_KEY_S))
-	{
-		setNextMove(glm::vec3(0.0f, 0.0f, -1.0f));
-	}
+	// if(Input::isKeyPressed(GLFW_KEY_S))
+	// {
+	// 	setNextMove(glm::vec3(0.0f, 0.0f, -1.0f));
+	// }
 
 	cube_outline.setColor(0, cubeTypes[type].color, true);
 }
@@ -362,12 +371,28 @@ void Player::draw(Camera& camera, Lighting& lighting, bool shadow)
 		}
 	}
 
-	
-	cube.draw(camera, shadow ? shadow_lighting : lighting);
-	if(state != PLAYER_INTRO) path.draw(camera, shadow ? shadow_lighting : lighting);
-	
-	if(type > 1)
+	float f = (sin(timer * 5.0f) + 1.0f) * 0.5f;
+	float blending = timer / PLAYER_PERIOD;
+	glm::vec3 color2 = glm::vec3(68.0f, 255.0f, 74.0f) * (1.0f / 255.0f);
+
+	if(timer > -50.0f)
 	{
+		cube.setColor(0, playerColor * blending + (1.0f - blending) * color2, true);
+		if(timer <= 0.1f)
+		{
+			outline_timer = 1.0f;
+		}
+	}else{
+		cube.setColor(0, playerColor, true);
+	}
+
+	cube.draw(camera, shadow ? shadow_lighting : lighting);
+	if(state != PLAYER_INTRO && state != PLAYER_OUTRO) path.draw(camera, shadow ? shadow_lighting : lighting);
+	
+	// if(type > 1)
+	if(outline_timer >= 0.0f)
+	{
+		cube_outline.setColor(0, glm::vec4(color2, outline_timer * outline_timer * outline_timer), true);
 		cube_outline.model = cube.model;
 		cube_outline.draw(camera, outline_lighting);
 	}

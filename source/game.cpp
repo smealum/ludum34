@@ -30,7 +30,13 @@ Game::Game():
 
 void Game::startIntro()
 {
-	resetLevel();
+	if(!level) return;
+
+	level->reset();
+	player.reset();
+
+	state = GAME_INTRO;
+	timeStart = glfwGetTime();
 }
 
 void Game::startOutro(gameTransitionTarget_t tt)
@@ -81,6 +87,25 @@ void Game::update(float delta)
 			{
 				startOutro(GAME_GAMEOVER);
 			}
+
+			if(!player.getAutopilot())
+			{
+				if(player.timer <= -50.0f)
+				{
+					// reset player.timer !
+					player.timer = PLAYER_PERIOD;
+				}else if(player.timer <= 0.0f)
+				{
+					player.timer = -500.0f;
+					player.setAutopilot(true);
+				}else{
+					player.timer -= delta;
+				}
+			}else{
+				// player is currently autopiloting
+				// do nothing
+			}
+
 			break;
 		case GAME_OUTRO:
 			if(glfwGetTime() - timeStart > 5.0)
@@ -98,30 +123,6 @@ void Game::update(float delta)
 			break;
 	}
 
-	if(!player.getAutopilot())
-	{
-		if(playerTimer <= -50.0f)
-		{
-			// reset playertimer !
-			playerTimer = 2.0f;
-		}else if(playerTimer <= 0.0f)
-		{
-			playerTimer = -500.0f;
-			player.setAutopilot(true);
-		}else{
-			playerTimer -= delta;
-		}
-	}else{
-		// player is currently autopiloting
-		// do nothing
-	}
-
-	// TEMP
-	if(Input::isKeyPressed(GLFW_KEY_SPACE))
-	{
-		player.setAutopilot(true);
-	}
-
 	if(Input::isKeyPressed(GLFW_KEY_R))
 	{
 		layer++;
@@ -129,9 +130,14 @@ void Game::update(float delta)
 		hud.updateSelectedLayer(layer);
 	}
 
-	if(Input::isKeyPressed(GLFW_KEY_O))
+	if(Input::isKeyPressed(GLFW_KEY_SPACE))
 	{
-		resetLevel();
+		startOutro(GAME_GAMEOVER);
+	}
+
+	if(Input::isKeyPressed(GLFW_KEY_ENTER))
+	{
+		startOutro(GAME_NEXTLEVEL);
 	}
 
 	if(level->update(delta))
@@ -149,6 +155,8 @@ void Game::draw()
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+	background.draw();
+
 	level->draw(camera, lighting, false, layer + 1);
 
 	player.draw(camera, lighting, true);
@@ -162,15 +170,4 @@ void Game::draw()
 void Game::loadLevel(LevelGenerator& lg)
 {
 	level = new Level(lg);
-}
-
-void Game::resetLevel()
-{
-	if(!level) return;
-
-	level->reset();
-	player.reset();
-
-	state = GAME_INTRO;
-	timeStart = glfwGetTime();
 }

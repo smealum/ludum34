@@ -6,6 +6,7 @@
 #include "player.h"
 #include "camera.h"
 #include "lighting.h"
+#include "background.h"
 #include "hud.h"
 
 typedef enum
@@ -30,20 +31,18 @@ class Game
 		void draw();
 
 		void loadLevel(LevelGenerator& lg);
-		void resetLevel();
 
 		void startIntro();
 		void startOutro(gameTransitionTarget_t tt);
 
 	private:
 		Camera camera;
+		Background background;
 		Lighting lighting;
 		Player player;
 		Hud hud;
 
 		Level* level;
-
-		float playerTimer;
 
 		int layer;
 

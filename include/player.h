@@ -9,6 +9,7 @@
 #include <deque>
 
 #define PLAYER_PATHLENGTH (8)
+#define PLAYER_PERIOD (5.0f)
 
 typedef enum
 {
@@ -48,6 +49,9 @@ class Player
 
 		void reset();
 		
+		float timer;
+		float outline_timer;
+
 	private:
 		glm::vec3 position, last_position;
 		glm::vec3 direction;

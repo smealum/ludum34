@@ -9,7 +9,7 @@
 typedef struct
 {
 	glm::vec3 position;
-	glm::vec3 color;
+	glm::vec4 color;
 	float fall_time;
 	int layer;
 }cube_s;
@@ -25,6 +25,7 @@ class Cubes
 
 		void setPosition(int i, glm::vec3 p, bool update = false);
 		void setColor(int i, glm::vec3 c, bool update = false);
+		void setColor(int i, glm::vec4 c, bool update = false);
 		void setIntro(int i, bool update = false);
 		void setOutro(int i, bool update = false);
 		void setFalling(int i, bool update = false);

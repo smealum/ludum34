@@ -18,7 +18,7 @@ Cubes::Cubes(int n, int _current_n, bool wireframe):
 	for(int i = 0; i < n; i++)
 	{
 		data[i].position = glm::vec3(0.0);
-		data[i].color = glm::vec3(1.0);
+		data[i].color = glm::vec4(1.0);
 		data[i].fall_time = 0.0;
 		data[i].layer = 0;
 	}
@@ -33,10 +33,10 @@ Cubes::Cubes(int n, int _current_n, bool wireframe):
 	shader.setBuffers(vao, vbo, -1);
 	shader.use();
 	glBindFragDataLocation(shader.getHandle(), 0, "out_color");
-	shader.setAttribute("position", 3, GL_FALSE, 8, 0);
-	shader.setAttribute("color", 3, GL_FALSE, 8, 3);
-	shader.setAttribute("fall_time", 1, GL_FALSE, 8, 6);
-	shader.setAttribute("layer", 1, GL_FALSE, 8, 7);
+	shader.setAttribute("position", 3, GL_FALSE, 9, 0);
+	shader.setAttribute("color", 4, GL_FALSE, 9, 3);
+	shader.setAttribute("fall_time", 1, GL_FALSE, 9, 7);
+	shader.setAttribute("layer", 1, GL_FALSE, 9, 8);
 
 	// setup wireframe lighting
 	wireframe_lighting.setObjectColor(true);
@@ -137,6 +137,15 @@ void Cubes::setPosition(int i, glm::vec3 p, bool update)
 }
 
 void Cubes::setColor(int i, glm::vec3 c, bool update)
+{
+	if(i >= current_n) return;
+
+	data[i].color = glm::vec4(c, 1.0f);
+
+	if(update) this->update();
+}
+
+void Cubes::setColor(int i, glm::vec4 c, bool update)
 {
 	if(i >= current_n) return;
 
