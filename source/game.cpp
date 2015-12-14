@@ -12,7 +12,8 @@ Game::Game():
 	layer(0),
 	state(GAME_INTRO),
 	timeStart(glfwGetTime()),
-	music("music.wav", true)
+	music("music.wav", true),
+	gameOverText("Game Over", glm::vec2(0.0f, 0.0f), 0.2f);
 {
 	// CAMERA
 	camera.setPosition(glm::vec3(-5.0f, 10.0f, -10.0f));
@@ -167,6 +168,7 @@ void Game::draw()
 	
 	level->draw(camera, lighting, true, layer + 1);
 
+	gameOverText.draw();
 	hud.draw();
 }
 

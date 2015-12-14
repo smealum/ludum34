@@ -9,6 +9,7 @@
 #include "background.h"
 #include "audio.h"
 #include "hud.h"
+#include "text.h"
 
 typedef enum
 {
@@ -52,6 +53,9 @@ class Game
 		gameState_t state;
 		gameTransitionTarget_t transitionTarget;
 		double timeStart;
+
+		Text gameOverText;
+		// Text successText;
 };
 
 #endif
