@@ -60,6 +60,28 @@ class Game
 		Text titleText1;
 		Text titleText2;
 		Text titleText3;
+
+		Text tutorial0text1;
+		Text tutorial0text2;
+		Text tutorial0text3;
+		Text tutorial0text4;
+
+		Text tutorial1text1;
+		Text tutorial1text2;
+		Text tutorial1text3;
+		Text tutorial1text4;
+		Text tutorial1text5;
+		Text tutorial1text6;
+
+		Text tutorial2text1;
+		Text tutorial2text2;
+		Text tutorial2text3;
+		Text tutorial2text4;
+
+		Text tutorial3text1;
+		Text tutorial3text2;
+		Text tutorial3text3;
+		Text tutorial3text4;
 };
 
 #endif

@@ -28,7 +28,7 @@ void windowInit()
 	if(!glfwInit()) exit(EXIT_FAILURE);
 	
 	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
-	window = glfwCreateWindow(settings.width, settings.height, "game", NULL, NULL);
+	window = glfwCreateWindow(settings.width, settings.height, "qBen", NULL, NULL);
 
 	if(!window)
 	{

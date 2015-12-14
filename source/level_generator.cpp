@@ -549,7 +549,7 @@ static std::random_device rd;
 
 difficultyLevel_s difficultyLevels[] =
 {
-	// RANDOM_DIFFICULTY_STRAIGHT_LINE
+	// RANDOM_DIFFICULTY_TUTORIAL0
 	(difficultyLevel_s)
 	{
 		// length
@@ -559,6 +559,54 @@ difficultyLevel_s difficultyLevels[] =
 			1.0f, // Forward
 			0.0f, // Left
 			0.0f, // Right
+			0.0f, // AboveLeft
+			0.0f, // AboveRight
+			0.0f, // AboveForward
+			0.0f, // BelowLeft
+			0.0f, // BelowRight
+			0.0f,  // BelowForward
+			0.0f, // MultipleAboveLeft
+			0.0f, // MultipleAboveRight
+			0.0f, // MultipleAboveForward
+			0.0f, // MultipleBelowLeft
+			0.0f, // MultipleBelowRight
+			0.0f  // MultipleBelowForward
+		}, 
+	},
+	// RANDOM_DIFFICULTY_TUTORIAL1
+	(difficultyLevel_s)
+	{
+		// length
+		16,
+		// markovWeights
+		{
+			6.0f, // Forward
+			1.0f, // Left
+			1.0f, // Right
+			0.0f, // AboveLeft
+			0.0f, // AboveRight
+			0.0f, // AboveForward
+			0.0f, // BelowLeft
+			0.0f, // BelowRight
+			0.0f,  // BelowForward
+			0.0f, // MultipleAboveLeft
+			0.0f, // MultipleAboveRight
+			0.0f, // MultipleAboveForward
+			0.0f, // MultipleBelowLeft
+			0.0f, // MultipleBelowRight
+			0.0f  // MultipleBelowForward
+		}, 
+	},
+	// RANDOM_DIFFICULTY_TUTORIAL2
+	(difficultyLevel_s)
+	{
+		// length
+		16,
+		// markovWeights
+		{
+			6.0f, // Forward
+			1.0f, // Left
+			1.0f, // Right
 			0.0f, // AboveLeft
 			0.0f, // AboveRight
 			0.0f, // AboveForward
@@ -669,9 +717,36 @@ difficultyLevel_s difficultyLevels[] =
 			0.1f  // MultipleBelowForward
 		},
 	},
+	// RANDOM_DIFFICULTY_VERYHARD
+	(difficultyLevel_s)
+	{
+		// length
+		48,
+		// markovWeights
+		{
+			1.0f, // Forward
+			1.0f, // Left
+			1.0f, // Right
+			2.0f, // AboveLeft
+			2.0f, // AboveRight
+			2.0f, // AboveForward
+			2.0f, // BelowLeft
+			2.0f, // BelowRight
+			2.0f,  // BelowForward
+			0.5f, // MultipleAboveLeft
+			0.5f, // MultipleAboveRight
+			0.5f, // MultipleAboveForward
+			0.5f, // MultipleBelowLeft
+			0.5f, // MultipleBelowRight
+			0.5f  // MultipleBelowForward
+		},
+	},
 };
 
 static const int num_difficulty_levels = sizeof(difficultyLevels) / sizeof(difficultyLevel_s);
+
+difficultyLevel_t lastdifflevel = RANDOM_DIFFICULTY_TUTORIAL0;
+
 
 Markov::Markov(pathStepRandom_s* steps, int length):
 	steps(steps),
@@ -703,6 +778,8 @@ void Markov::updateWeights(float* weights, int n)
 	}
 }
 
+int curstep = 0;
+
 bool Markov::getStep(glm::ivec3 position, ConstraintManager& constraints, glm::ivec3& out)
 {
 	bool rejected[length];
@@ -715,6 +792,55 @@ bool Markov::getStep(glm::ivec3 position, ConstraintManager& constraints, glm::i
 	while(num_rejections < length)
 	{
 		float t = 0, v = dist(mt) * _total_weights / total_weights;
+
+		// printf("%d\n", (int)lastdifflevel);
+
+		if(lastdifflevel == RANDOM_DIFFICULTY_TUTORIAL1)
+		{
+			if(curstep == 8)
+			{
+				steps[1].stepper->getStep(position, out, constraints);
+				return true;
+			}else{
+				steps[0].stepper->getStep(position, out, constraints);
+				return true;
+			}
+			continue;
+		}
+
+		if(lastdifflevel == RANDOM_DIFFICULTY_TUTORIAL2)
+		{
+			if(curstep == 6)
+			{
+				steps[1].stepper->getStep(position, out, constraints);
+				return true;
+			}else if(curstep == 9)
+			{
+				steps[2].stepper->getStep(position, out, constraints);
+				return true;
+			}else{
+				steps[0].stepper->getStep(position, out, constraints);
+				return true;
+			}
+			continue;
+		}
+
+		if(lastdifflevel == RANDOM_DIFFICULTY_TUTORIAL3)
+		{
+			if(curstep == 6)
+			{
+				steps[5].stepper->getStep(position, out, constraints);
+				return true;
+			}else if(curstep == 9)
+			{
+				steps[8].stepper->getStep(position, out, constraints);
+				return true;
+			}else{
+				steps[0].stepper->getStep(position, out, constraints);
+				return true;
+			}
+			continue;
+		}
 
 		for(int i = 0; i < length; i++)
 		{
@@ -748,6 +874,7 @@ LevelGeneratorRandom::LevelGeneratorRandom(difficultyLevel_t difficulty):
 	depthMap(new int[length + 1]),
 	difficulty(difficulty)
 {
+	lastdifflevel = difficulty;
 	markov.updateWeights(difficultyLevels[difficulty].markovWeights, NUM_MARKOVSTEPS);
 
 	clear();
@@ -791,6 +918,7 @@ void LevelGeneratorRandom::generatePath()
 		int cur_depth = 0, cur_depth_cnt = 0;
 		while(path.back().z < length && stuckCounter < 5)
 		{
+			curstep = path.size();
 			unsigned int s = path.size();
 			generatePathStep();
 			if(cur_depth != path.back().z)
