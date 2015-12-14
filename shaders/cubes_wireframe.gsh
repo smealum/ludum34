@@ -28,7 +28,7 @@ out VertexAttrib
 
 #define outputVertex(v) tmp = v; \
     gl_Position = proj * vec4(tmp, 1.0); \
-    gl_Position /= vec4(gl_Position.w); \
+    gl_Position = vec4(gl_Position.x / gl_Position.w, gl_Position.y / gl_Position.w, gl_Position.z / gl_Position.w, gl_Position.w / gl_Position.w); \
     gl_Position.z += 0.000002; \
     vout.position = tmp; \
     EmitVertex();
