@@ -1,0 +1,40 @@
+SRC_C := $(wildcard source/*.c)
+SRC_CPP := $(wildcard source/*.cpp)
+OBJS := $(addprefix build/, $(notdir $(SRC_C:%.c=%.o))) $(addprefix build/, $(notdir $(SRC_CPP:%.cpp=%.o)))
+TARGET := game
+CFLAGS := -Iinclude -Wall
+CXXFLAGS := -Iinclude -Wall -std=c++11
+LDLIBS = -lfmod -lm -lGLU -lGL -lGLEW -lglfw
+
+$(TARGET): build/dirs $(OBJS)
+	g++ $(LDFLAGS) -o $@ $(OBJS) $(LDLIBS)
+
+run: $(TARGET)
+	./$(TARGET)
+
+-include $(OBJS:.o=.o.d)
+
+build/%.o: source/%.c build/dirs
+	gcc -c $(CFLAGS) $< -o $@
+	@gcc -MM $(CFLAGS) -MT '$@' $< > $@.d
+	@cp -f $@.d $@.d.tmp
+	@sed -e 's/.*://' -e 's/\\$$//' < $@.d.tmp | fmt -1 | \
+	  sed -e 's/^ *//' -e 's/$$/:/' >> $@.d
+	@rm -f $@.d.tmp
+
+build/%.o: source/%.cpp build/dirs
+	g++ -c $(CXXFLAGS) $< -o $@
+	@g++ -MM $(CXXFLAGS) -MT '$@' $< > $@.d
+	@cp -f $@.d $@.d.tmp
+	@sed -e 's/.*://' -e 's/\\$$//' < $@.d.tmp | fmt -1 | \
+	  sed -e 's/^ *//' -e 's/$$/:/' >> $@.d
+	@rm -f $@.d.tmp
+
+clean:
+	@rm -rf build
+	@rm -f $(TARGET)
+	@rm -f build/dirs
+
+build/dirs:
+	@mkdir -p build
+	@touch build/dirs
