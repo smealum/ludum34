@@ -11,7 +11,7 @@
 #include "audio.h"
 #include "text.h"
 
-Settings settings(800 * 2, 600 * 2, 3.0f * 2);
+Settings settings(800, 600, 3.0f);
 
 int main(void)
 {
