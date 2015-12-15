@@ -67,7 +67,7 @@ bool windowUpdate()
 		real_width = real_height * forced_aspect;
 	}
 
-	settings.setResolution(real_width, full_height);
+	settings.setResolution(real_width, real_height);
 
 	int diff_width = full_width - real_width, diff_height = full_height - real_height;
 	glViewport(diff_width / 2, diff_height / 2, real_width, real_height);
